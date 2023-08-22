@@ -8,6 +8,21 @@
 
 using namespace std;
 
+int map_size = 15;
+int map[15][15]={ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                  1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+                  1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,
+                  1,0,0,0,1,0,1,1,1,1,1,1,1,1,1,
+                  1,1,0,0,1,0,0,0,0,0,1,1,1,1,1,
+                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
+                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
+                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
+                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
+                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
+                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
+                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
+                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
+                  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
 int main()
 {
@@ -27,14 +42,6 @@ int main()
         //FIM: COMANDOS PARA REPOSICIONAR O CURSOR NO IN�CIO DA TELA
     ///ALERTA: N�O MODIFICAR O TRECHO DE C�DIGO, ACIMA.
 
-    int m[7][7]={   1,1,1,1,1,1,1,
-                    1,0,0,0,0,0,1,
-                    1,0,0,0,1,1,1,
-                    1,0,0,0,1,0,1,
-                    1,1,0,0,1,0,1,
-                    1,0,0,0,0,0,1,
-                    1,1,1,1,1,1,1};
-
 
     //Posi��o inicial do personagem no console
     int x=5, y=5;
@@ -46,12 +53,12 @@ int main()
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 
         ///Imprime o jogo: mapa e personagem.
-        for(int i=0;i<7;i++){
-            for(int j=0;j<7;j++){
+        for(int i=0;i<map_size;i++){
+            for(int j=0;j<map_size;j++){
                 if(i==x && j==y){
                     cout<<char(2); //personagem
                 } else {
-                    switch (m[i][j]){
+                    switch (map[i][j]){
                         case 0: cout<<" "; break; //caminho
                         case 1: cout<<char(219); break; //parede
                         //default: cout<<"-"; //erro
@@ -64,21 +71,7 @@ int main()
         ///executa os movimentos
          if ( _kbhit() ){
             tecla = getch();
-            switch(tecla)
-            {
-                case 72: case 'w': ///cima
-                    x--;
-                break;
-                case 80: case 's': ///baixo
-                    x++;
-                break;
-                case 75:case 'a': ///esquerda
-                    y--;
-                break;
-                case 77: case 'd': ///direita
-                    y++;
-                break;
-            }
+            check_map(tecla, x, y);
          }
 
 
@@ -86,3 +79,29 @@ int main()
 
     return 0;
 } //fim main
+
+void check_map(char direcao, int x, int y){
+    switch(direcao)
+    {
+        case 72: case 'w': ///cima
+            if (map[x][y-1] == 0){
+                y--;
+            }
+        break;
+        case 80: case 's': ///baixo
+            if (map[x][y+1] == 0){
+                y++;
+            }
+        break;
+        case 75:case 'a': ///esquerda
+            if (map[x--][y] == 0){
+                x--;
+            }
+        break;
+        case 77: case 'd': ///direita
+            if (map[x++][y] == 0){
+                x++;
+            }
+        break;
+    }
+}
