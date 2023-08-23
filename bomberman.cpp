@@ -8,21 +8,55 @@
 
 using namespace std;
 
+struct player{
+    int x = 5;
+    int y = 5;
+    char desenho = char(2);
+};
+player p1;
+
 int map_size = 15;
 int map[15][15]={ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                  1,0,0,0,0,0,0,1,1,0,0,0,0,0,1,
+                  1,1,1,1,0,0,0,1,1,0,1,1,1,0,1,
                   1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-                  1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,
-                  1,0,0,0,1,0,1,1,1,1,1,1,1,1,1,
-                  1,1,0,0,1,0,0,0,0,0,1,1,1,1,1,
-                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
-                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
-                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
-                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
-                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
-                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
-                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
-                  1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,
+                  1,0,1,1,1,1,2,1,1,0,0,1,1,2,1,
+                  1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+                  1,0,1,1,1,0,0,1,1,0,0,1,1,0,1,
+                  1,0,0,0,1,1,0,0,0,0,0,0,0,0,1,
+                  1,0,1,1,2,2,2,1,1,1,1,1,1,0,1,
+                  1,0,0,0,2,0,0,0,0,0,0,0,0,0,1,
+                  1,2,1,1,2,0,0,1,1,1,2,1,1,0,1,
+                  1,0,0,0,0,0,0,2,0,0,0,0,0,1,1,
+                  1,0,1,1,0,0,0,2,0,0,0,1,1,0,1,
                   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+
+void check_map(char direcao, int &x, int &y){
+    cout<<direcao;
+    switch(direcao)
+    {
+        case 'w': ///cima
+            if (map[y-1][x] == 0){
+                y = y-1;
+            }
+        break;
+        case 's': ///baixo
+            if (map[y+1][x] == 0){
+                y = y+1;
+            }
+        break;
+        case 'a': ///esquerda
+            if (map[y][x-1] == 0){
+                x = x-1;
+            }
+        break;
+        case 'd': ///direita
+            if (map[y][x+1] == 0){
+                x = x+1;
+            }
+        break;
+    }
+}
 
 int main()
 {
@@ -42,27 +76,25 @@ int main()
         //FIM: COMANDOS PARA REPOSICIONAR O CURSOR NO IN�CIO DA TELA
     ///ALERTA: N�O MODIFICAR O TRECHO DE C�DIGO, ACIMA.
 
-
-    //Posi��o inicial do personagem no console
-    int x=5, y=5;
     //Vari�vel para tecla precionada
     char tecla;
+
+    map[p1.y][p1.x] = 3;
 
     while(true){
         ///Posiciona a escrita no início do console
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 
         ///Imprime o jogo: mapa e personagem.
-        for(int i=0;i<map_size;i++){
-            for(int j=0;j<map_size;j++){
-                if(i==x && j==y){
-                    cout<<char(2); //personagem
-                } else {
-                    switch (map[i][j]){
-                        case 0: cout<<" "; break; //caminho
-                        case 1: cout<<char(219); break; //parede
-                        //default: cout<<"-"; //erro
-                    } //fim switch
+        for(int h=0;h<map_size;h++){
+            for(int w=0;w<map_size;w++){
+                switch (map[h][w]){
+                    case 0: cout<<" "; break; //caminho
+                    case 1: cout<<char(219); break; //parede
+                    case 2: cout<<char(177); break; //parede_frágil
+                    case 3: cout<<p1.desenho; break;//player
+                    //default: cout<<"-"; //erro
+                 //fim switch
                 }
             }
             cout<<"\n";
@@ -70,8 +102,10 @@ int main()
 
         ///executa os movimentos
          if ( _kbhit() ){
+            map[p1.y][p1.x] = 0;
             tecla = getch();
-            check_map(tecla, x, y);
+            check_map(tecla, p1.x, p1.y);
+            map[p1.y][p1.x] = 3;
          }
 
 
@@ -79,29 +113,3 @@ int main()
 
     return 0;
 } //fim main
-
-void check_map(char direcao, int x, int y){
-    switch(direcao)
-    {
-        case 72: case 'w': ///cima
-            if (map[x][y-1] == 0){
-                y--;
-            }
-        break;
-        case 80: case 's': ///baixo
-            if (map[x][y+1] == 0){
-                y++;
-            }
-        break;
-        case 75:case 'a': ///esquerda
-            if (map[x--][y] == 0){
-                x--;
-            }
-        break;
-        case 77: case 'd': ///direita
-            if (map[x++][y] == 0){
-                x++;
-            }
-        break;
-    }
-}
