@@ -3,17 +3,33 @@
     versão: 0.1 (Felski)
 */
 #include <iostream>
-#include<windows.h>
-#include<conio.h>
+#include <windows.h>
+#include <conio.h>
+#include <time.h>
 
 using namespace std;
+
+struct bomb{
+    int x;
+    int y;
+    char desenho = 'ð';
+};
+bomb B;
+      
+struct chama{
+    int x = 0;
+    int y = 0;
+    char desenho = '#';
+};
+chama C;
 
 struct player{
     int x = 5;
     int y = 5;
-    char desenho = char(2);
+    char facing = 'd';
+    char desenho = '☻';
 };
-player p1;
+player P;
 
 int map_size = 15;
 int map[15][15]={ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -31,31 +47,87 @@ int map[15][15]={ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                   1,0,1,1,0,0,0,2,0,0,0,1,1,0,1,
                   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
+int create_bomb(int x, int y){
+    map[y][x] = 4;
+    B.x = x;
+    B.y = y;
+    P.desenho = char(1);
+    return time(NULL);
+}
+
 void check_map(char direcao, int &x, int &y){
-    cout<<direcao;
     switch(direcao)
+    {
+        case 72: case 'w': ///cima
+            if (map[y-1][x] == 0){
+                y = y-1;
+                P.facing = 'w';
+            }
+        break;
+        case 80: case 's': ///baixo
+            if (map[y+1][x] == 0){
+                y = y+1;
+                P.facing = 's';
+            }
+        break;
+        case 75: case 'a': ///esquerda
+            if (map[y][x-1] == 0){
+                x = x-1;
+                P.facing = 'a';
+            }
+        break;
+        case 77: case 'd': ///direita
+            if (map[y][x+1] == 0){
+                x = x+1;
+                P.facing = 'd';
+            }
+        break;
+    }
+}
+
+int check_map_bomb(char facing, int  x, int  y){
+    switch(facing)
     {
         case 'w': ///cima
             if (map[y-1][x] == 0){
-                y = y-1;
+                return create_bomb(x, y-1);
             }
         break;
         case 's': ///baixo
             if (map[y+1][x] == 0){
-                y = y+1;
+                return create_bomb(x, y+1);
             }
         break;
         case 'a': ///esquerda
             if (map[y][x-1] == 0){
-                x = x-1;
+                return create_bomb(x-1, y);
             }
         break;
         case 'd': ///direita
             if (map[y][x+1] == 0){
-                x = x+1;
+                return create_bomb(x+1, y);
             }
         break;
     }
+}
+
+int explode_bomb(int x, int y){
+    map[y][x] = 5;
+    if (map[y-1][x] != 1){
+        map[y][x] = 5;
+    }
+    if (map[y+1][x] != 1){
+        map[y][x] = 5;
+    }
+    if (map[y][x-1] != 1){
+        map[y][x] = 5;
+    }
+    if (map[y][x+1] != 1){
+        map[y][x] = 5;
+    }
+    C.x = x;
+    C.y = y;
+    return time(NULL);
 }
 
 int main()
@@ -76,10 +148,14 @@ int main()
         //FIM: COMANDOS PARA REPOSICIONAR O CURSOR NO IN�CIO DA TELA
     ///ALERTA: N�O MODIFICAR O TRECHO DE C�DIGO, ACIMA.
 
+    time_t seconds;
+
     //Vari�vel para tecla precionada
     char tecla;
+    int timer=0;
+    int timer2=0;
 
-    map[p1.y][p1.x] = 3;
+    map[P.y][P.x] = 3;
 
     while(true){
         ///Posiciona a escrita no início do console
@@ -92,7 +168,9 @@ int main()
                     case 0: cout<<" "; break; //caminho
                     case 1: cout<<char(219); break; //parede
                     case 2: cout<<char(177); break; //parede_frágil
-                    case 3: cout<<p1.desenho; break;//player
+                    case 3: cout<<P.desenho; break; //player
+                    case 4: cout<<B.desenho; break; //bomba
+                    case 5: cout<<C.desenho; break; //chama
                     //default: cout<<"-"; //erro
                  //fim switch
                 }
@@ -101,12 +179,39 @@ int main()
         } //fim for mapa
 
         ///executa os movimentos
-         if ( _kbhit() ){
-            map[p1.y][p1.x] = 0;
+        if ( _kbhit() ){
+            map[P.y][P.x] = 0;
             tecla = getch();
-            check_map(tecla, p1.x, p1.y);
-            map[p1.y][p1.x] = 3;
-         }
+            if (5 <= time(NULL) - timer){
+                timer2 = explode_bomb(B.y, B.x);
+                P.desenho = char(2);
+
+                if (tecla == char(32)){
+                    timer = check_map_bomb(P.facing, P.x, P.y);
+                }
+            }
+
+            if (1 <= time(NULL) - timer2){
+                if(map[C.y][C.x] == 5){
+                    map[C.y][C.x] = 0;
+                }
+                if(map[C.y-1][C.x] == 5){
+                    map[C.y-1][C.x] = 0;
+                }
+                if(map[C.y+1][C.x] == 5){
+                    map[C.y+1][C.x] = 0;
+                }
+                if(map[C.y][C.x-1] == 5){
+                    map[C.y][C.x-1] = 0;
+                }
+                if(map[C.y][C.x+1] == 5){
+                    map[C.y][C.x+1] = 0;
+                }
+            }
+            
+            check_map(tecla, P.x, P.y);
+            map[P.y][P.x] = 3;
+        }
 
 
     } //fim do laço do jogo
