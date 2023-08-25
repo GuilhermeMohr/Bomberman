@@ -12,13 +12,15 @@ using namespace std;
 struct bomb{
     int x;
     int y;
-    char desenho = 'ð';
+    bool existe = false;
+    char desenho = char(208);
 };
 bomb B;
-      
+
 struct chama{
     int x = 0;
     int y = 0;
+    bool existe = false;
     char desenho = '#';
 };
 chama C;
@@ -27,9 +29,17 @@ struct player{
     int x = 5;
     int y = 5;
     char facing = 'd';
-    char desenho = '☻';
+    char desenho = char(2);
 };
 player P;
+
+struct inimigos {
+
+    int x[5];
+    int y[5];
+    char desenho = char(1);
+};
+inimigos I;
 
 int map_size = 15;
 int map[15][15]={ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -51,6 +61,7 @@ int create_bomb(int x, int y){
     map[y][x] = 4;
     B.x = x;
     B.y = y;
+    B.existe = true;
     P.desenho = char(1);
     return time(NULL);
 }
@@ -114,19 +125,21 @@ int check_map_bomb(char facing, int  x, int  y){
 int explode_bomb(int x, int y){
     map[y][x] = 5;
     if (map[y-1][x] != 1){
-        map[y][x] = 5;
+        map[y-1][x] = 5;
     }
     if (map[y+1][x] != 1){
-        map[y][x] = 5;
+        map[y+1][x] = 5;
     }
     if (map[y][x-1] != 1){
-        map[y][x] = 5;
+        map[y][x-1] = 5;
     }
     if (map[y][x+1] != 1){
-        map[y][x] = 5;
+        map[y][x+1] = 5;
     }
     C.x = x;
     C.y = y;
+    B.existe = false;
+    C.existe = true;
     return time(NULL);
 }
 
@@ -150,6 +163,8 @@ int main()
 
     time_t seconds;
 
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
     //Vari�vel para tecla precionada
     char tecla;
     int timer=0;
@@ -165,12 +180,12 @@ int main()
         for(int h=0;h<map_size;h++){
             for(int w=0;w<map_size;w++){
                 switch (map[h][w]){
-                    case 0: cout<<" "; break; //caminho
-                    case 1: cout<<char(219); break; //parede
-                    case 2: cout<<char(177); break; //parede_frágil
-                    case 3: cout<<P.desenho; break; //player
-                    case 4: cout<<B.desenho; break; //bomba
-                    case 5: cout<<C.desenho; break; //chama
+                    case 0: SetConsoleTextAttribute(hConsole, 0); cout << " "; break; //caminho
+                    case 1: SetConsoleTextAttribute(hConsole, 8); cout << char(219); break; //parede
+                    case 2: SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede_frágil
+                    case 3: SetConsoleTextAttribute(hConsole, 15); cout << P.desenho; break; //player
+                    case 4: SetConsoleTextAttribute(hConsole, 8);  cout << B.desenho; break; //bomba
+                    case 5: SetConsoleTextAttribute(hConsole, 12); cout << C.desenho; break; //chama
                     //default: cout<<"-"; //erro
                  //fim switch
                 }
@@ -181,31 +196,10 @@ int main()
         ///executa os movimentos
         if ( _kbhit() ){
             map[P.y][P.x] = 0;
-            tecla = getch();
-            if (5 <= time(NULL) - timer){
-                timer2 = explode_bomb(B.y, B.x);
-                P.desenho = char(2);
-
+            tecla = _getch();
+            if (time(NULL) - timer >= 5){
                 if (tecla == char(32)){
                     timer = check_map_bomb(P.facing, P.x, P.y);
-                }
-            }
-
-            if (1 <= time(NULL) - timer2){
-                if(map[C.y][C.x] == 5){
-                    map[C.y][C.x] = 0;
-                }
-                if(map[C.y-1][C.x] == 5){
-                    map[C.y-1][C.x] = 0;
-                }
-                if(map[C.y+1][C.x] == 5){
-                    map[C.y+1][C.x] = 0;
-                }
-                if(map[C.y][C.x-1] == 5){
-                    map[C.y][C.x-1] = 0;
-                }
-                if(map[C.y][C.x+1] == 5){
-                    map[C.y][C.x+1] = 0;
                 }
             }
             
@@ -213,6 +207,31 @@ int main()
             map[P.y][P.x] = 3;
         }
 
+        if (time(NULL) - timer >= 3 && B.existe) {
+            timer2 = explode_bomb(B.x, B.y);
+            P.desenho = char(2);
+        }
+
+        if (time(NULL) - timer2 >= 0.5 && C.existe) {
+            if (map[C.y - 1][C.x] == 5) {
+                map[C.y - 1][C.x] = 0;
+            }
+            if (map[C.y + 1][C.x] == 5) {
+                map[C.y + 1][C.x] = 0;
+            }
+            if (map[C.y][C.x - 1] == 5) {
+                map[C.y][C.x - 1] = 0;
+            }
+            if (map[C.y][C.x + 1] == 5) {
+                map[C.y][C.x + 1] = 0;
+            }
+            if (time(NULL) - timer2 >= 1) {
+                if (map[C.y][C.x] == 5) {
+                    map[C.y][C.x] = 0;
+                    C.existe = false;
+                }
+            }
+        }
 
     } //fim do laço do jogo
 
