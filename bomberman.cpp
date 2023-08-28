@@ -1,7 +1,3 @@
-/**
-    Estrutura inicial para um jogo de labirinto
-    versão: 0.1 (Felski)
-*/
 #include <iostream>
 #include <windows.h>
 #include <conio.h>
@@ -12,34 +8,33 @@ using namespace std;
 struct bomb{
     int x;
     int y;
-    bool existe = false;
-    char desenho = char(208);
+    bool exist = false;
+    char draw = char(208);
 };
 bomb B;
 
-struct chama{
+struct flame{
     int x = 0;
     int y = 0;
-    bool existe = false;
-    char desenho = '#';
+    bool exist = false;
+    char draw = '#';
 };
-chama C;
+flame F;
 
 struct player{
     int x = 5;
     int y = 5;
     char facing = 'd';
-    char desenho = char(2);
+    char draw = char(2);
 };
 player P;
 
-struct inimigos {
-
+struct enemys {
     int x[5];
     int y[5];
-    char desenho = char(1);
+    char draw = char(1);
 };
-inimigos I;
+enemys E;
 
 int map_size = 15;
 int map[15][15]={ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -57,17 +52,8 @@ int map[15][15]={ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                   1,0,1,1,0,0,0,2,0,0,0,1,1,0,1,
                   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
-int create_bomb(int x, int y){
-    map[y][x] = 4;
-    B.x = x;
-    B.y = y;
-    B.existe = true;
-    P.desenho = char(1);
-    return time(NULL);
-}
-
-void check_map(char direcao, int &x, int &y){
-    switch(direcao)
+void check_map(char direction, int &x, int &y){
+    switch(direction)
     {
         case 72: case 'w': ///cima
             if (map[y-1][x] == 0){
@@ -94,6 +80,15 @@ void check_map(char direcao, int &x, int &y){
             }
         break;
     }
+}
+
+int create_bomb(int x, int y){
+    map[y][x] = 4;
+    B.x = x;
+    B.y = y;
+    B.exist = true;
+    P.draw = char(1);
+    return time(NULL);
 }
 
 int check_map_bomb(char facing, int  x, int  y){
@@ -136,10 +131,10 @@ int explode_bomb(int x, int y){
     if (map[y][x+1] != 1){
         map[y][x+1] = 5;
     }
-    C.x = x;
-    C.y = y;
-    B.existe = false;
-    C.existe = true;
+    F.x = x;
+    F.y = y;
+    B.exist = false;
+    F.exist = true;
     return time(NULL);
 }
 
@@ -158,18 +153,22 @@ int main()
         COORD coord;
         coord.X = CX;
         coord.Y = CY;
-        //FIM: COMANDOS PARA REPOSICIONAR O CURSOR NO IN�CIO DA TELA
-    ///ALERTA: N�O MODIFICAR O TRECHO DE C�DIGO, ACIMA.
+        //FIM: COMANDOS PARA REPOSICIONAR O CURSOR NO INICIO DA TELA
+    ///ALERTA: NAO MODIFICAR O TRECHO DE CODIGO, ACIMA.
 
+    //Prepara o código para pegar o tempo atual em segundos.
     time_t seconds;
 
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    //Vari�vel para tecla precionada
-    char tecla;
+    //Variavel para a tecla precionada
+    char keyboard;
+
+    //Variáveis para contagem do tempo.
     int timer=0;
     int timer2=0;
 
+    //Posição inicial do jogador.
     map[P.y][P.x] = 3;
 
     while(true){
@@ -182,10 +181,10 @@ int main()
                 switch (map[h][w]){
                     case 0: SetConsoleTextAttribute(hConsole, 0); cout << " "; break; //caminho
                     case 1: SetConsoleTextAttribute(hConsole, 8); cout << char(219); break; //parede
-                    case 2: SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede_frágil
-                    case 3: SetConsoleTextAttribute(hConsole, 15); cout << P.desenho; break; //player
-                    case 4: SetConsoleTextAttribute(hConsole, 8);  cout << B.desenho; break; //bomba
-                    case 5: SetConsoleTextAttribute(hConsole, 12); cout << C.desenho; break; //chama
+                    case 2: SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede frágil
+                    case 3: SetConsoleTextAttribute(hConsole, 15); cout << P.draw; break; //player
+                    case 4: SetConsoleTextAttribute(hConsole, 8);  cout << B.draw; break; //bomba
+                    case 5: SetConsoleTextAttribute(hConsole, 12); cout << F.draw; break; //chama
                     //default: cout<<"-"; //erro
                  //fim switch
                 }
@@ -195,40 +194,45 @@ int main()
 
         ///executa os movimentos
         if ( _kbhit() ){
-            map[P.y][P.x] = 0;
-            tecla = _getch();
-            if (time(NULL) - timer >= 5){
-                if (tecla == char(32)){
+            keyboard = _getch();
+
+            map[P.y][P.x] = 0; //Apaga o jogador para atualizar sua posição.
+
+            //Explode a bomba se existir.
+            if (time(NULL) - timer >= 5 && B.exist) {
+                timer2 = explode_bomb(B.x, B.y);
+                P.draw = char(2);
+            }
+
+            //Coloca a bomba se requisitado.
+            if (time(NULL) - timer >= 5.5){
+                if (keyboard == char(32)){
                     timer = check_map_bomb(P.facing, P.x, P.y);
                 }
             }
             
-            check_map(tecla, P.x, P.y);
-            map[P.y][P.x] = 3;
+            check_map(keyboard, P.x, P.y); //Checa o mapa para movimentar o jogador.
+            map[P.y][P.x] = 3; //Coloca o jogador na sua posição atualizada.
         }
 
-        if (time(NULL) - timer >= 3 && B.existe) {
-            timer2 = explode_bomb(B.x, B.y);
-            P.desenho = char(2);
-        }
-
-        if (time(NULL) - timer2 >= 0.5 && C.existe) {
-            if (map[C.y - 1][C.x] == 5) {
-                map[C.y - 1][C.x] = 0;
+        //Se existir chamas deixadas pela bomba as extingue depois de um tempo.
+        if (time(NULL) - timer2 >= 0.5 && F.exist) {
+            if (map[F.y - 1][F.x] == 5) {
+                map[F.y - 1][F.x] = 0;
             }
-            if (map[C.y + 1][C.x] == 5) {
-                map[C.y + 1][C.x] = 0;
+            if (map[F.y + 1][F.x] == 5) {
+                map[F.y + 1][F.x] = 0;
             }
-            if (map[C.y][C.x - 1] == 5) {
-                map[C.y][C.x - 1] = 0;
+            if (map[F.y][F.x - 1] == 5) {
+                map[F.y][F.x - 1] = 0;
             }
-            if (map[C.y][C.x + 1] == 5) {
-                map[C.y][C.x + 1] = 0;
+            if (map[F.y][F.x + 1] == 5) {
+                map[F.y][F.x + 1] = 0;
             }
             if (time(NULL) - timer2 >= 1) {
-                if (map[C.y][C.x] == 5) {
-                    map[C.y][C.x] = 0;
-                    C.existe = false;
+                if (map[F.y][F.x] == 5) {
+                    map[F.y][F.x] = 0;
+                    F.exist = false;
                 }
             }
         }
