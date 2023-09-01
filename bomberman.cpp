@@ -140,7 +140,7 @@ int check_map_bomb(char facing, int  x, int  y) {
 }
 
 void kill_enemy(int x, int y){
-    for(int i; i < 5; i++){
+    for(int i=0; i < 5; i++){
         if(E.x[i] == x && E.y[i] == y){
             E.alive[i] = false;
         }
@@ -198,23 +198,41 @@ int explode_bomb(int x, int y) {
     return time(NULL);
 }
 
-void enemy_move(int i){
+int enemy_move(int i){
+    map[E.y[i]][E.x[i]] = 0;
+
     if(check_map(E.facing[i], E.x[i], E.y[i]) == ' '){
         switch(E.facing[i]){
             case 'a':
+                if (map[E.y[i]][E.x[i]-1] == 3) {
+                    P.alive = false;
+                }
                 E.facing[i] = 's';
             break;
             case 's':
+                if (map[E.y[i] + 1][E.x[i]] == 3) {
+                    P.alive = false;
+                }
                 E.facing[i] = 'd';
             break;
             case 'd':
+                if (map[E.y[i]][E.x[i] + 1] == 3) {
+                    P.alive = false;
+                }
                 E.facing[i] = 'w';
             break;
             case 'w':
+                if (map[E.y[i] + 1][E.x[i]] == 3) {
+                    P.alive = false;
+                }
                 E.facing[i] = 'a';
             break;
         }
     }
+
+    map[E.y[i]][E.x[i]] = 6;
+
+    return time(NULL);
 }
 
 int main()
@@ -277,6 +295,7 @@ int main()
     //Variáveis para contagem do tempo.
     int timer = 0;
     int timer2 = 0;
+    int timer3 = 0;
 
     //Posição inicial do jogador.
     map[P.y][P.x] = 3;
@@ -327,9 +346,11 @@ int main()
             }
         }
 
-        for(int i=0; i < 5; i++){
-            if(E.alive[i]){
-                enemy_move(i);
+        if (time(NULL) - timer3 > 0.5) {
+            for (int i = 0; i < 5; i++) {
+                if (E.alive[i]) {
+                    timer3 = enemy_move(i);
+                }
             }
         }
 
@@ -362,6 +383,17 @@ int main()
         }
 
     } //fim do laço do jogo
+
+    system("cls");
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+    SetConsoleTextAttribute(hConsole, 15);
+
+    cout << "       ________                        ________                         \n";
+    cout << "      / _____ / _____    _____   ____   \\_____  \\___   __ ___________ \n";
+    cout << "     /   \\  ___\\__   \\  /     \\_/ __ \\   /   |   \\  \\ / // __ \\_  __ \\     \n";
+    cout << "     \\    \\_\\  \\/ __  \\|  Y Y  \\  ___/  /    |    \\    /\\  ___/|  | \\/\n";
+    cout << "      \\______  (____  / __|_|  /\__  >    \______  / \\_ /  \\___  >__|    \n";
+    cout << "             \\/     \\/       \\/    \\/          \\/           \\/        \n";
 
     return 0;
 } //fim main
