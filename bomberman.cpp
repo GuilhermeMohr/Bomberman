@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <conio.h>
 #include <time.h>
+#include <cstdlib>
 
 using namespace std;
 
@@ -9,6 +10,7 @@ struct bomb {
     int x;
     int y;
     bool exist = false;
+    bool hidden = false;
     char draw = char(208);
 };
 bomb B;
@@ -24,6 +26,7 @@ flame F;
 struct player {
     int x = 5;
     int y = 5;
+    bool alive = true;
     char facing = 'd';
     char draw = char(2);
 };
@@ -32,54 +35,73 @@ player P;
 struct enemys {
     int x[5];
     int y[5];
+    bool alive[5] = {true,true,true,true,true};
+    char facing[5];
     char draw = char(1);
 };
 enemys E;
 
 int map_size = 15;
 int map[15][15] = { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                  1,0,0,0,0,0,0,1,1,0,0,0,0,0,1,
-                  1,1,1,1,0,0,0,1,1,0,1,1,1,0,1,
-                  1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-                  1,0,1,1,1,1,2,1,1,0,0,1,1,2,1,
-                  1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-                  1,0,1,1,1,0,0,1,1,0,0,1,1,0,1,
-                  1,0,0,0,1,1,0,0,0,0,0,0,0,0,1,
-                  1,0,1,1,2,2,2,1,1,1,1,1,1,0,1,
-                  1,0,0,0,2,0,0,0,0,0,0,0,0,0,1,
-                  1,2,1,1,2,0,0,1,1,1,2,1,1,0,1,
-                  1,0,0,0,0,0,0,2,0,0,0,0,0,1,1,
-                  1,0,1,1,0,0,0,2,0,0,0,1,1,0,1,
-                  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+                    1,0,0,0,0,0,0,1,1,0,0,0,0,0,1,
+                    1,1,1,1,0,0,0,1,1,0,1,1,1,0,1,
+                    1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+                    1,0,1,1,1,1,2,1,1,0,0,1,1,2,1,
+                    1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+                    1,0,1,1,1,0,0,1,1,0,0,1,1,0,1,
+                    1,0,0,0,1,1,0,0,0,0,0,0,0,0,1,
+                    1,0,1,1,2,2,2,1,1,1,1,1,1,0,1,
+                    1,0,0,0,2,0,0,0,0,0,0,0,0,0,1,
+                    1,2,1,1,2,0,0,1,1,1,2,1,1,0,1,
+                    1,0,0,0,0,0,0,2,0,0,0,0,0,1,1,
+                    1,0,1,1,0,0,0,2,0,0,0,1,1,0,1,
+                    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
 
-void check_map(char direction, int& x, int& y) {
+char check_map(char direction, int& x, int& y) {
     switch (direction)
     {
     case 72: case 'w': ///cima
         if (map[y - 1][x] == 0) {
             y = y - 1;
-            P.facing = 'w';
+            return 'w';
+        } else if (map[y - 1][x] == 4) {
+            B.hidden = true;
+            y = y - 1;
+            return 'w';
         }
         break;
     case 80: case 's': ///baixo
         if (map[y + 1][x] == 0) {
             y = y + 1;
-            P.facing = 's';
+            return 's';
+        } else if (map[y + 1][x] == 4) {
+            B.hidden = true;
+            y = y + 1;
+            return 's';
         }
         break;
     case 75: case 'a': ///esquerda
         if (map[y][x - 1] == 0) {
             x = x - 1;
-            P.facing = 'a';
+            return 'a';
+        } else if (map[y][x - 1] == 4) {
+            B.hidden = true;
+            x = x - 1;
+            return 'a';
         }
         break;
     case 77: case 'd': ///direita
         if (map[y][x + 1] == 0) {
             x = x + 1;
-            P.facing = 'd';
+            return 'd';
+        } else if (map[y][x + 1] == 4) {
+            B.hidden = true;
+            x = x + 1;
+            return 'd';
         }
         break;
     }
+    return ' ';
 }
 
 int create_bomb(int x, int y) {
@@ -117,18 +139,56 @@ int check_map_bomb(char facing, int  x, int  y) {
     }
 }
 
+void kill_enemy(int x, int y){
+    for(int i; i < 5; i++){
+        if(E.x[i] == x && E.y[i] == y){
+            E.alive[i] = false;
+        }
+    }
+}
+
 int explode_bomb(int x, int y) {
+    if(map[y][x] == 6){
+        kill_enemy(x, y);
+    } else if (map[y][x] == 3) {
+        P.alive = false;
+    }
     map[y][x] = 5;
+
     if (map[y - 1][x] != 1) {
+        if(map[y - 1][x] == 6){
+            kill_enemy(x, y);
+        } else if (map[y - 1][x] == 3) {
+            P.alive = false;
+        }
+
         map[y - 1][x] = 5;
     }
     if (map[y + 1][x] != 1) {
+        if(map[y + 1][x] == 6){
+            kill_enemy(x, y);
+        } else if (map[y + 1][x] == 3) {
+            P.alive = false;
+        }
+
         map[y + 1][x] = 5;
     }
     if (map[y][x - 1] != 1) {
+        if(map[y][x - 1] == 6){
+            kill_enemy(x, y);
+        } else if (map[y][x - 1] == 3) {
+            P.alive = false;
+        }
+
         map[y][x - 1] = 5;
     }
     if (map[y][x + 1] != 1) {
+        if(map[y][x + 1] == 6){
+            kill_enemy(x, y);
+        } else if (map[y][x + 1] == 3) {
+            P.alive = false;
+        }
+
         map[y][x + 1] = 5;
     }
     F.x = x;
@@ -136,6 +196,25 @@ int explode_bomb(int x, int y) {
     B.exist = false;
     F.exist = true;
     return time(NULL);
+}
+
+void enemy_move(int i){
+    if(check_map(E.facing[i], E.x[i], E.y[i]) == ' '){
+        switch(E.facing[i]){
+            case 'a':
+                E.facing[i] = 's';
+            break;
+            case 's':
+                E.facing[i] = 'd';
+            break;
+            case 'd':
+                E.facing[i] = 'w';
+            break;
+            case 'w':
+                E.facing[i] = 'a';
+            break;
+        }
+    }
 }
 
 int main()
@@ -154,7 +233,9 @@ int main()
     coord.X = CX;
     coord.Y = CY;
     //FIM: COMANDOS PARA REPOSICIONAR O CURSOR NO INICIO DA TELA
-///ALERTA: NAO MODIFICAR O TRECHO DE CODIGO, ACIMA.
+    ///ALERTA: NAO MODIFICAR O TRECHO DE CODIGO, ACIMA.
+
+    srand(time(NULL));
 
     //Prepara o código para pegar o tempo atual em segundos.
     time_t seconds;
@@ -164,10 +245,28 @@ int main()
     //Coloca inimigos no mapa.
     for (int i = 0; i < sizeof(E.x) / sizeof(*E.x); i++)
     {
+        switch(rand()%4){
+            case 1:
+                E.facing[i] = 'a';
+            break;
+            case 2:
+                E.facing[i] = 's';
+            break;
+            case 3:
+                E.facing[i] = 'd';
+            break;
+            case 4:
+                E.facing[i] = 'w';
+            break;
+            default:
+                E.facing[i] = 'w';
+        }
+
         do {
             E.x[i] = (rand() % map_size) - 1;
             E.y[i] = (rand() % map_size) - 1;
         } while (map[E.y[i]][E.x[i]] != 0);
+
         map[E.y[i]][E.x[i]] = 6;
     };
 
@@ -182,7 +281,7 @@ int main()
     //Posição inicial do jogador.
     map[P.y][P.x] = 3;
 
-    while (true) {
+    while (P.alive) {
         ///Posiciona a escrita no início do console
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 
@@ -217,8 +316,21 @@ int main()
                 }
             }
 
-            check_map(keyboard, P.x, P.y); //Checa o mapa para movimentar o jogador.
+            P.facing = check_map(keyboard, P.x, P.y); //Checa o mapa para movimentar o jogador.
             map[P.y][P.x] = 3; //Coloca o jogador na sua posição atualizada.
+        }
+
+        if(B.hidden){
+            if(map[B.y][B.x] == 0){
+                map[B.y][B.x] = 4;
+                B.hidden = false;
+            }
+        }
+
+        for(int i=0; i < 5; i++){
+            if(E.alive[i]){
+                enemy_move(i);
+            }
         }
 
         //Explode a bomba se existir.
