@@ -329,7 +329,7 @@ int main()
             map[P.y][P.x] = 0; //Apaga o jogador para atualizar sua posição.
 
             //Coloca a bomba se requisitado.
-            if (time(NULL) - timer >= 5.5) {
+            if (time(NULL) - timer >= 3.5) {
                 if (keyboard == char(32)) {
                     timer = check_map_bomb(P.facing, P.x, P.y);
                 }
@@ -339,23 +339,32 @@ int main()
             map[P.y][P.x] = 3; //Coloca o jogador na sua posição atualizada.
         }
 
-        if(B.hidden){
+        if(!B.exist){
+            B.hidden = false;
+        }
+        else if(B.hidden){
             if(map[B.y][B.x] == 0){
                 map[B.y][B.x] = 4;
                 B.hidden = false;
             }
         }
 
+        //Inimigo anda.
         if (time(NULL) - timer3 > 0.5) {
+            bool alive = false;
             for (int i = 0; i < 5; i++) {
                 if (E.alive[i]) {
                     timer3 = enemy_move(i);
+                    alive = true;
                 }
+            }
+            if(!alive){
+                break;
             }
         }
 
         //Explode a bomba se existir.
-        if (time(NULL) - timer >= 5 && B.exist) {
+        if (time(NULL) - timer >= 3 && B.exist) {
             timer2 = explode_bomb(B.x, B.y);
             P.draw = char(2);
         }
