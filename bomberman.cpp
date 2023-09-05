@@ -148,47 +148,45 @@ void kill_enemy(int x, int y){
 }
 
 int explode_bomb(int x, int y) {
-    if(map[y][x] == 6){
-        kill_enemy(x, y);
-    } else if (map[y][x] == 3) {
+    kill_enemy(x, y);
+
+    if (map[y][x] == 3) {
         P.alive = false;
     }
     map[y][x] = 5;
 
     if (map[y - 1][x] != 1) {
-        if(map[y - 1][x] == 6){
-            kill_enemy(x, y);
-        } else if (map[y - 1][x] == 3) {
+        kill_enemy(x, y-1);
+
+        if (map[y - 1][x] == 3) {
             P.alive = false;
         }
-
         map[y - 1][x] = 5;
     }
+
     if (map[y + 1][x] != 1) {
-        if(map[y + 1][x] == 6){
-            kill_enemy(x, y);
-        } else if (map[y + 1][x] == 3) {
+        kill_enemy(x, y+1);
+
+        if (map[y + 1][x] == 3) {
             P.alive = false;
         }
-
         map[y + 1][x] = 5;
     }
+
     if (map[y][x - 1] != 1) {
-        if(map[y][x - 1] == 6){
-            kill_enemy(x, y);
-        } else if (map[y][x - 1] == 3) {
+        kill_enemy(x-1, y);
+
+        if (map[y][x - 1] == 3) {
             P.alive = false;
         }
-
         map[y][x - 1] = 5;
     }
     if (map[y][x + 1] != 1) {
-        if(map[y][x + 1] == 6){
-            kill_enemy(x, y);
-        } else if (map[y][x + 1] == 3) {
+        kill_enemy(x+1, y);
+
+        if (map[y][x + 1] == 3) {
             P.alive = false;
         }
-
         map[y][x + 1] = 5;
     }
     F.x = x;
