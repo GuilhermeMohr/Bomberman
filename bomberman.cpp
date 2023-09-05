@@ -33,13 +33,13 @@ struct player {
 player P;
 
 struct enemys {
-    int x[5];
-    int y[5];
-    bool alive[5] = {true,true,true,true,true};
-    char facing[5];
+    int x;
+    int y;
+    bool alive = true;
+    char facing;
     char draw = char(1);
 };
-enemys E;
+enemys E[5];
 
 int map_size = 15;
 int map[15][15] = { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -141,8 +141,8 @@ int check_map_bomb(char facing, int  x, int  y) {
 
 void kill_enemy(int x, int y){
     for(int i=0; i < 5; i++){
-        if(E.x[i] == x && E.y[i] == y){
-            E.alive[i] = false;
+        if(E[i].x == x && E[i].y == y){
+            E[i].alive = false;
         }
     }
 }
@@ -197,38 +197,38 @@ int explode_bomb(int x, int y) {
 }
 
 int enemy_move(int i){
-    map[E.y[i]][E.x[i]] = 0;
+    map[E[i].y][E[i].x] = 0;
 
-    if(check_map(E.facing[i], E.x[i], E.y[i]) == ' '){
-        switch(E.facing[i]){
+    if(check_map(E[i].facing, E[i].x, E[i].y) == ' '){
+        switch(E[i].facing){
             case 'a':
-                if (map[E.y[i]][E.x[i]-1] == 3) {
+                if (map[E[i].y][E[i].x-1] == 3) {
                     P.alive = false;
                 }
-                E.facing[i] = 's';
+                E[i].facing = 's';
             break;
             case 's':
-                if (map[E.y[i] + 1][E.x[i]] == 3) {
+                if (map[E[i].y + 1][E[i].x] == 3) {
                     P.alive = false;
                 }
-                E.facing[i] = 'd';
+                E[i].facing = 'd';
             break;
             case 'd':
-                if (map[E.y[i]][E.x[i] + 1] == 3) {
+                if (map[E[i].y][E[i].x + 1] == 3) {
                     P.alive = false;
                 }
-                E.facing[i] = 'w';
+                E[i].facing = 'w';
             break;
             case 'w':
-                if (map[E.y[i] + 1][E.x[i]] == 3) {
+                if (map[E[i].y + 1][E[i].x] == 3) {
                     P.alive = false;
                 }
-                E.facing[i] = 'a';
+                E[i].facing = 'a';
             break;
         }
     }
 
-    map[E.y[i]][E.x[i]] = 6;
+    map[E[i].y][E[i].x] = 6;
 
     return time(NULL);
 }
@@ -259,31 +259,31 @@ int main()
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
     //Coloca inimigos no mapa.
-    for (int i = 0; i < sizeof(E.x) / sizeof(*E.x); i++)
+    for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++)
     {
         switch(rand()%4){
             case 1:
-                E.facing[i] = 'a';
+                E[i].facing = 'a';
             break;
             case 2:
-                E.facing[i] = 's';
+                E[i].facing = 's';
             break;
             case 3:
-                E.facing[i] = 'd';
+                E[i].facing = 'd';
             break;
             case 4:
-                E.facing[i] = 'w';
+                E[i].facing = 'w';
             break;
             default:
-                E.facing[i] = 'w';
+                E[i].facing = 'w';
         }
 
         do {
-            E.x[i] = (rand() % map_size) - 1;
-            E.y[i] = (rand() % map_size) - 1;
-        } while (map[E.y[i]][E.x[i]] != 0);
+            E[i].x = (rand() % map_size) - 1;
+            E[i].y = (rand() % map_size) - 1;
+        } while (map[E[i].y][E[i].x] != 0);
 
-        map[E.y[i]][E.x[i]] = 6;
+        map[E[i].y][E[i].x] = 6;
     };
 
 
@@ -312,7 +312,7 @@ int main()
                 case 3: SetConsoleTextAttribute(hConsole, 15); cout << P.draw; break; //player
                 case 4: SetConsoleTextAttribute(hConsole, 8);  cout << B.draw; break; //bomba
                 case 5: SetConsoleTextAttribute(hConsole, 12); cout << F.draw; break; //chama
-                case 6: SetConsoleTextAttribute(hConsole, 12); cout << E.draw; break; //inimigos
+                case 6: SetConsoleTextAttribute(hConsole, 12); cout << E[0].draw; break; //inimigos
                     //default: cout<<"-"; //erro
                  //fim switch
                 }
@@ -351,7 +351,7 @@ int main()
         if (time(NULL) - timer3 > 0.5) {
             bool alive = false;
             for (int i = 0; i < 5; i++) {
-                if (E.alive[i]) {
+                if (E[i].alive) {
                     timer3 = enemy_move(i);
                     alive = true;
                 }
@@ -392,15 +392,25 @@ int main()
     } //fim do laço do jogo
 
     system("cls");
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
-    SetConsoleTextAttribute(hConsole, 15);
 
-    cout << "       ________                        ________                         \n";
-    cout << "      / _____ / _____    _____   ____   \\_____  \\___   __ ___________ \n";
-    cout << "     /   \\  ___\\__   \\  /     \\_/ __ \\   /   |   \\  \\ / // __ \\_  __ \\     \n";
-    cout << "     \\    \\_\\  \\/ __  \\|  Y Y  \\  ___/  /    |    \\    /\\  ___/|  | \\/\n";
-    cout << "      \\______  (____  / __|_|  /\__  >    \______  / \\_ /  \\___  >__|    \n";
-    cout << "             \\/     \\/       \\/    \\/          \\/           \\/        \n";
+
+    if(P.alive){
+        SetConsoleTextAttribute(hConsole, 10);
+        cout << "_____.___.               __      __                    \n";
+        cout << "\\__  |   | ____  __ __  /  \\    /  \\____   ____     \n";
+        cout << " /   |   |/  _ \\|  |  \\ \\   \\/\\/   /  _ \\ /    \\    \n";
+        cout << " \\____   (  <_> )  |  /  \\        (  <_> )   |  \\ \n";
+        cout << " / ______|\\____/|____/    \\__/\\  / \\____/|___|  /  \n";
+        cout << " \\/                            \\/             \\/    \n";
+    }else{
+        SetConsoleTextAttribute(hConsole, 12);
+        cout << "       ________                        ________                         \n";
+        cout << "      / _____ / _____    _____   ____   \\_____  \\___   __ ___________ \n";
+        cout << "     /   \\  ___\\__   \\  /     \\_/ __ \\   /   |   \\  \\ / // __ \\_  __ \\     \n";
+        cout << "     \\    \\_\\  \\/ __  \\|  Y Y  \\  ___/  /    |    \\    /\\  ___/|  | \\/\n";
+        cout << "      \\______  (____  / __|_|  /\__  >    \______  / \\_ /  \\___  >__|    \n";
+        cout << "             \\/     \\/       \\/    \\/          \\/           \\/        \n";
+    }
 
     return 0;
 } //fim main
