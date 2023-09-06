@@ -1,7 +1,7 @@
-﻿#include <iostream>
-#include <windows.h>
-#include <conio.h>
-#include <time.h>
+﻿#include <iostream> //Cout, Cin, etc...
+#include <windows.h> //Biblioteca windows para o terminal.
+#include <conio.h> //Teclado.
+#include <time.h> //Usar o tempo.
 #include <cstdlib>
 
 using namespace std;
@@ -57,14 +57,14 @@ int map[15][15] = { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                     1,0,1,1,0,0,0,2,0,0,0,1,1,0,1,
                     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
 
-char check_map(char direction, int& x, int& y) {
+char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
     switch (direction)
     {
     case 72: case 'w': ///cima
-        if (map[y - 1][x] == 0) {
+        if (map[y - 1][x] == 0) { // Checa se o espaço é livre
             y = y - 1;
             return 'w';
-        } else if (map[y - 1][x] == 4) {
+        } else if (map[y - 1][x] == 4) { // Checa se há uma bomba
             B.hidden = true;
             y = y - 1;
             return 'w';
@@ -104,7 +104,7 @@ char check_map(char direction, int& x, int& y) {
     return ' ';
 }
 
-int create_bomb(int x, int y) {
+int create_bomb(int x, int y) { //Cria nova bomba
     map[y][x] = 4;
     B.x = x;
     B.y = y;
@@ -113,6 +113,7 @@ int create_bomb(int x, int y) {
     return time(NULL);
 }
 
+//Checa se é possível colocar uma bomba no mapa conforme a orientação do jogador
 int check_map_bomb(char facing, int  x, int  y) {
     switch (facing)
     {
@@ -139,7 +140,7 @@ int check_map_bomb(char facing, int  x, int  y) {
     }
 }
 
-void kill_enemy(int x, int y){
+void kill_enemy(int x, int y){ //Mata um inimigo
     for(int i=0; i < 5; i++){
         if(E[i].x == x && E[i].y == y){
             E[i].alive = false;
@@ -147,13 +148,13 @@ void kill_enemy(int x, int y){
     }
 }
 
-int explode_bomb(int x, int y) {
-    kill_enemy(x, y);
+int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
+    kill_enemy(x, y); //Matar inimigo
 
-    if (map[y][x] == 3) {
+    if (map[y][x] == 3) { //Matar jogador
         P.alive = false;
     }
-    map[y][x] = 5;
+    map[y][x] = 5; //Colocar chama
 
     if (map[y - 1][x] != 1) {
         kill_enemy(x, y-1);
@@ -196,10 +197,10 @@ int explode_bomb(int x, int y) {
     return time(NULL);
 }
 
-int enemy_move(int i){
+int enemy_move(int i){ //Move o inimigo.
     map[E[i].y][E[i].x] = 0;
 
-    if(check_map(E[i].facing, E[i].x, E[i].y) == ' '){
+    if(check_map(E[i].facing, E[i].x, E[i].y) == ' '){ //Se bateu em uma parede gira.
         switch(E[i].facing){
             case 'a':
                 if (map[E[i].y][E[i].x-1] == 3) {
@@ -251,11 +252,13 @@ int main()
     //FIM: COMANDOS PARA REPOSICIONAR O CURSOR NO INICIO DA TELA
     ///ALERTA: NAO MODIFICAR O TRECHO DE CODIGO, ACIMA.
 
+    //Randomizar a seed das funções rand().
     srand(time(NULL));
 
     //Prepara o código para pegar o tempo atual em segundos.
     time_t seconds;
 
+    //Recebe a entrada e saída padrão.
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
     //Coloca inimigos no mapa.
@@ -287,7 +290,7 @@ int main()
     };
 
 
-    //Variavel para a tecla precionada
+    //Variavel para a tecla precionada.
     char keyboard;
 
     //Variáveis para contagem do tempo.
@@ -299,28 +302,27 @@ int main()
     map[P.y][P.x] = 3;
 
     while (P.alive) {
-        ///Posiciona a escrita no início do console
+        ///Posiciona a escrita no início do console.
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 
         ///Imprime o jogo: mapa e personagem.
         for (int h = 0; h < map_size; h++) {
             for (int w = 0; w < map_size; w++) {
                 switch (map[h][w]) {
-                case 0: SetConsoleTextAttribute(hConsole, 0); cout << " "; break; //caminho
-                case 1: SetConsoleTextAttribute(hConsole, 8); cout << char(219); break; //parede
-                case 2: SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede frágil
-                case 3: SetConsoleTextAttribute(hConsole, 15); cout << P.draw; break; //player
-                case 4: SetConsoleTextAttribute(hConsole, 8);  cout << B.draw; break; //bomba
-                case 5: SetConsoleTextAttribute(hConsole, 12); cout << F.draw; break; //chama
-                case 6: SetConsoleTextAttribute(hConsole, 12); cout << E[0].draw; break; //inimigos
-                    //default: cout<<"-"; //erro
-                 //fim switch
+                case 0: SetConsoleTextAttribute(hConsole, 0); cout << " "; break; //caminho.
+                case 1: SetConsoleTextAttribute(hConsole, 8); cout << char(219); break; //parede.
+                case 2: SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede frágil.
+                case 3: SetConsoleTextAttribute(hConsole, 15); cout << P.draw; break; //player.
+                case 4: SetConsoleTextAttribute(hConsole, 8);  cout << B.draw; break; //bomba.
+                case 5: SetConsoleTextAttribute(hConsole, 12); cout << F.draw; break; //chama.
+                case 6: SetConsoleTextAttribute(hConsole, 12); cout << E[0].draw; break; //inimigos.
+                //fim switch.
                 }
             }
             cout << "\n";
-        } //fim for mapa
+        } //fim for mapa.
 
-        ///executa os movimentos
+        ///executa os movimentos.
         if (_kbhit()) {
             keyboard = _getch();
 
@@ -337,6 +339,7 @@ int main()
             map[P.y][P.x] = 3; //Coloca o jogador na sua posição atualizada.
         }
 
+        //Mostra a bomba se escondida.
         if(!B.exist){
             B.hidden = false;
         }
@@ -350,7 +353,7 @@ int main()
         //Inimigo anda.
         if (time(NULL) - timer3 > 0.5) {
             bool alive = false;
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++) {
                 if (E[i].alive) {
                     timer3 = enemy_move(i);
                     alive = true;
@@ -389,7 +392,7 @@ int main()
             }
         }
 
-    } //fim do laço do jogo
+    } //fim do laço do jogo.
 
     system("cls");
 
@@ -413,4 +416,4 @@ int main()
     }
 
     return 0;
-} //fim main
+} //fim main.
