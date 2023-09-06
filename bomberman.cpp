@@ -61,11 +61,11 @@ char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
     switch (direction)
     {
     case 72: case 'w': ///cima
-        if (map[y - 1][x] == 0) { // Checa se o espaço é livre
+        if (map[y - 1][x] == 0) { //Checa se o espaço é livre
             y = y - 1;
             return 'w';
-        } else if (map[y - 1][x] == 4) { // Checa se há uma bomba
-            B.hidden = true;
+        } else if (map[y - 1][x] == 4) { //Checa se há uma bomba
+            B.hidden = true; //Esconde a bomba
             y = y - 1;
             return 'w';
         }
