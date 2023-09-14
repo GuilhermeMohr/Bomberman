@@ -2,7 +2,7 @@
 <p>
 Trabalho de algoritmos e programação II, passado pelo professor Thiago Felsky Pereira.
 Univali (Universidade do Vale do Itajaí).
-Alunos: Guilherme Mohr dos Santos e João .
+Alunos: Guilherme Mohr dos Santos e João Victor.
 </p>
 
 <p>
