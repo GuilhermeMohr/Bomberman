@@ -6,40 +6,29 @@
 
 using namespace std;
 
-struct bomb {
+struct obj {
     int x;
     int y;
     bool exist = false;
     bool hidden = false;
-    char draw = char(208);
+    char draw = ' ';
 };
-bomb B;
 
-struct flame {
-    int x = 0;
-    int y = 0;
-    bool exist = false;
-    char draw = '#';
-};
-flame F;
-
-struct player {
-    int x = 5;
-    int y = 5;
-    bool alive = true;
-    char facing = 'd';
-    char draw = char(2);
-};
-player P;
-
-struct enemys {
+struct creature {
     int x;
     int y;
     bool alive = true;
     char facing;
     char draw = char(1);
 };
-enemys E[5];
+
+obj B; //Bomba
+
+obj F; //Chama
+
+creature P; //Player
+
+creature E[5]; //Inimigo
 
 int map_size = 15;
 int map[15][15] = { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -260,6 +249,15 @@ int main()
 
     //Recebe a entrada e saída padrão.
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    B.draw = char(208);
+
+    F.x = 0; F.y = 0;
+    F.draw = '#';
+
+    P.x = 5; P.y = 5;
+    P.facing = 'd';
+    P.draw = char(2);
 
     //Coloca inimigos no mapa.
     for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++)
