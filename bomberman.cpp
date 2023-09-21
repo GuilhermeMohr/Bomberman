@@ -3,59 +3,39 @@
 #include <conio.h> //Teclado.
 #include <time.h> //Usar o tempo.
 #include <cstdlib>
+#include <fstream>
+#include <string>
 
 using namespace std;
 
-struct bomb {
+struct obj {
     int x;
     int y;
     bool exist = false;
     bool hidden = false;
-    char draw = char(208);
+    char draw = ' ';
 };
-bomb B;
 
-struct flame {
-    int x = 0;
-    int y = 0;
-    bool exist = false;
-    char draw = '#';
-};
-flame F;
-
-struct player {
-    int x = 5;
-    int y = 5;
-    bool alive = true;
-    char facing = 'd';
-    char draw = char(2);
-};
-player P;
-
-struct enemys {
+struct creature {
     int x;
     int y;
     bool alive = true;
     char facing;
     char draw = char(1);
 };
-enemys E[5];
 
-int map_size = 15;
-int map[15][15] = { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                    1,0,0,0,0,0,0,1,1,0,0,0,0,0,1,
-                    1,1,1,1,0,0,0,1,1,0,1,1,1,0,1,
-                    1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-                    1,0,1,1,1,1,2,1,1,0,0,1,1,2,1,
-                    1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-                    1,0,1,1,1,0,0,1,1,0,0,1,1,0,1,
-                    1,0,0,0,1,1,0,0,0,0,0,0,0,0,1,
-                    1,0,1,1,2,2,2,1,1,1,1,1,1,0,1,
-                    1,0,0,0,2,0,0,0,0,0,0,0,0,0,1,
-                    1,2,1,1,2,0,0,1,1,1,2,1,1,0,1,
-                    1,0,0,0,0,0,0,2,0,0,0,0,0,1,1,
-                    1,0,1,1,0,0,0,2,0,0,0,1,1,0,1,
-                    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+obj B; //Bomba
+
+obj F; //Chama
+
+creature P; //Player
+
+creature E[5]; //Inimigo
+
+ifstream map_file;
+
+const int map_size = 15;
+int map[map_size][map_size];
 
 char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
     switch (direction)
@@ -261,6 +241,33 @@ int main()
     //Recebe a entrada e saída padrão.
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
+    char c;
+    int i=0;
+    int ii=0;
+    map_file.open("map_file.txt");
+    do {
+        c = map_file.get();
+        if (c == '\n') {
+            i++;
+            ii = 0;
+        }
+        else {
+            map[i][ii] = int(c) - '0';
+            ii++;
+        }
+    } while(!map_file.eof());
+
+    map_file.close();
+
+    B.draw = char(208);
+
+    F.x = 0; F.y = 0;
+    F.draw = '#';
+
+    P.x = 5; P.y = 5;
+    P.facing = 'd';
+    P.draw = char(2);
+
     //Coloca inimigos no mapa.
     for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++)
     {
@@ -282,8 +289,8 @@ int main()
         }
 
         do {
-            E[i].x = (rand() % map_size) - 1;
-            E[i].y = (rand() % map_size) - 1;
+            E[i].x = rand() % (map_size-1);
+            E[i].y = rand() % (map_size-1);
         } while (map[E[i].y][E[i].x] != 0);
 
         map[E[i].y][E[i].x] = 6;
@@ -411,7 +418,7 @@ int main()
         cout << "      / _____ / _____    _____   ____   \\_____  \\___   __ ___________ \n";
         cout << "     /   \\  ___\\__   \\  /     \\_/ __ \\   /   |   \\  \\ / // __ \\_  __ \\     \n";
         cout << "     \\    \\_\\  \\/ __  \\|  Y Y  \\  ___/  /    |    \\    /\\  ___/|  | \\/\n";
-        cout << "      \\______  (____  / __|_|  /\__  >    \______  / \\_ /  \\___  >__|    \n";
+        cout << "      \\______  (____  / __|_|  /\\__  >    \______  / \\_ /  \\___  >__|    \n";
         cout << "             \\/     \\/       \\/    \\/          \\/           \\/        \n";
     }
 
