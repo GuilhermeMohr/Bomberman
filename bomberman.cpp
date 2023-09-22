@@ -5,214 +5,12 @@
 #include <cstdlib>
 #include <fstream>
 #include <string>
+#include "bomb_class.h"
+#include "bomb_func.h"
 
 using namespace std;
 
-struct obj {
-    int x;
-    int y;
-    bool exist = false;
-    bool hidden = false;
-    char draw = ' ';
-};
-
-struct creature {
-    int x;
-    int y;
-    bool alive = true;
-    char facing;
-    char draw = char(1);
-};
-
-obj B; //Bomba
-
-obj F; //Chama
-
-creature P; //Player
-
-creature E[5]; //Inimigo
-
 ifstream map_file;
-
-const int map_size = 15;
-int map[map_size][map_size];
-
-char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
-    switch (direction)
-    {
-    case 72: case 'w': ///cima
-        if (map[y - 1][x] == 0) { //Checa se o espaço é livre
-            y = y - 1;
-            return 'w';
-        } else if (map[y - 1][x] == 4) { //Checa se há uma bomba
-            B.hidden = true; //Esconde a bomba
-            y = y - 1;
-            return 'w';
-        }
-        break;
-    case 80: case 's': ///baixo
-        if (map[y + 1][x] == 0) {
-            y = y + 1;
-            return 's';
-        } else if (map[y + 1][x] == 4) {
-            B.hidden = true;
-            y = y + 1;
-            return 's';
-        }
-        break;
-    case 75: case 'a': ///esquerda
-        if (map[y][x - 1] == 0) {
-            x = x - 1;
-            return 'a';
-        } else if (map[y][x - 1] == 4) {
-            B.hidden = true;
-            x = x - 1;
-            return 'a';
-        }
-        break;
-    case 77: case 'd': ///direita
-        if (map[y][x + 1] == 0) {
-            x = x + 1;
-            return 'd';
-        } else if (map[y][x + 1] == 4) {
-            B.hidden = true;
-            x = x + 1;
-            return 'd';
-        }
-        break;
-    }
-    return ' ';
-}
-
-int create_bomb(int x, int y) { //Cria nova bomba
-    map[y][x] = 4;
-    B.x = x;
-    B.y = y;
-    B.exist = true;
-    P.draw = char(1);
-    return time(NULL);
-}
-
-//Checa se é possível colocar uma bomba no mapa conforme a orientação do jogador
-int check_map_bomb(char facing, int  x, int  y) {
-    switch (facing)
-    {
-    case 'w': ///cima
-        if (map[y - 1][x] == 0) {
-            return create_bomb(x, y - 1);
-        }
-        break;
-    case 's': ///baixo
-        if (map[y + 1][x] == 0) {
-            return create_bomb(x, y + 1);
-        }
-        break;
-    case 'a': ///esquerda
-        if (map[y][x - 1] == 0) {
-            return create_bomb(x - 1, y);
-        }
-        break;
-    case 'd': ///direita
-        if (map[y][x + 1] == 0) {
-            return create_bomb(x + 1, y);
-        }
-        break;
-    }
-}
-
-void kill_enemy(int x, int y){ //Mata um inimigo
-    for(int i=0; i < 5; i++){
-        if(E[i].x == x && E[i].y == y){
-            E[i].alive = false;
-        }
-    }
-}
-
-int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
-    kill_enemy(x, y); //Matar inimigo
-
-    if (map[y][x] == 3) { //Matar jogador
-        P.alive = false;
-    }
-    map[y][x] = 5; //Colocar chama
-
-    if (map[y - 1][x] != 1) {
-        kill_enemy(x, y-1);
-
-        if (map[y - 1][x] == 3) {
-            P.alive = false;
-        }
-        map[y - 1][x] = 5;
-    }
-
-    if (map[y + 1][x] != 1) {
-        kill_enemy(x, y+1);
-
-        if (map[y + 1][x] == 3) {
-            P.alive = false;
-        }
-        map[y + 1][x] = 5;
-    }
-
-    if (map[y][x - 1] != 1) {
-        kill_enemy(x-1, y);
-
-        if (map[y][x - 1] == 3) {
-            P.alive = false;
-        }
-        map[y][x - 1] = 5;
-    }
-    if (map[y][x + 1] != 1) {
-        kill_enemy(x+1, y);
-
-        if (map[y][x + 1] == 3) {
-            P.alive = false;
-        }
-        map[y][x + 1] = 5;
-    }
-    F.x = x;
-    F.y = y;
-    B.exist = false;
-    F.exist = true;
-    return time(NULL);
-}
-
-int enemy_move(int i){ //Move o inimigo.
-    map[E[i].y][E[i].x] = 0;
-
-    if(check_map(E[i].facing, E[i].x, E[i].y) == ' '){ //Se bateu em uma parede gira.
-        switch(E[i].facing){
-            case 'a':
-                if (map[E[i].y][E[i].x-1] == 3) {
-                    P.alive = false;
-                }
-                E[i].facing = 's';
-            break;
-            case 's':
-                if (map[E[i].y + 1][E[i].x] == 3) {
-                    P.alive = false;
-                }
-                E[i].facing = 'd';
-            break;
-            case 'd':
-                if (map[E[i].y][E[i].x + 1] == 3) {
-                    P.alive = false;
-                }
-                E[i].facing = 'w';
-            break;
-            case 'w':
-                if (map[E[i].y + 1][E[i].x] == 3) {
-                    P.alive = false;
-                }
-                E[i].facing = 'a';
-            break;
-        }
-    }
-
-    map[E[i].y][E[i].x] = 6;
-
-    return time(NULL);
-}
 
 int main()
 {
@@ -259,41 +57,40 @@ int main()
 
     map_file.close();
 
-    B.draw = char(208);
+    B.set_draw(char(208));
 
-    F.x = 0; F.y = 0;
-    F.draw = '#';
+    F.set_coord(0,0);
+    F.set_draw('#');
 
-    P.x = 5; P.y = 5;
-    P.facing = 'd';
-    P.draw = char(2);
+    P.set_coord(5,5);
+    P.set_facing('d');
+    P.set_draw(char(2));
 
     //Coloca inimigos no mapa.
     for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++)
     {
         switch(rand()%4){
             case 1:
-                E[i].facing = 'a';
+                E[i].set_facing('a');
             break;
             case 2:
-                E[i].facing = 's';
+                E[i].set_facing('s');
             break;
             case 3:
-                E[i].facing = 'd';
+                E[i].set_facing('d');
             break;
             case 4:
-                E[i].facing = 'w';
+                E[i].set_facing('w');
             break;
             default:
-                E[i].facing = 'w';
+                E[i].set_facing('w');
         }
 
         do {
-            E[i].x = rand() % (map_size-1);
-            E[i].y = rand() % (map_size-1);
-        } while (map[E[i].y][E[i].x] != 0);
+            E[i].set_coord(rand() % (map_size-1), rand() % (map_size-1));
+        } while (map[E[i].get_y()][E[i].get_x()] != 0);
 
-        map[E[i].y][E[i].x] = 6;
+        map[E[i].get_y()][E[i].get_x()] = 6;
     };
 
 
@@ -306,9 +103,9 @@ int main()
     int timer3 = 0;
 
     //Posição inicial do jogador.
-    map[P.y][P.x] = 3;
+    map[P.get_y()][P.get_x()] = 3;
 
-    while (P.alive) {
+    while (P.get_alive()) {
         ///Posiciona a escrita no início do console.
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 
@@ -319,10 +116,10 @@ int main()
                 case 0: SetConsoleTextAttribute(hConsole, 0); cout << " "; break; //caminho.
                 case 1: SetConsoleTextAttribute(hConsole, 8); cout << char(219); break; //parede.
                 case 2: SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede frágil.
-                case 3: SetConsoleTextAttribute(hConsole, 15); cout << P.draw; break; //player.
-                case 4: SetConsoleTextAttribute(hConsole, 8);  cout << B.draw; break; //bomba.
-                case 5: SetConsoleTextAttribute(hConsole, 12); cout << F.draw; break; //chama.
-                case 6: SetConsoleTextAttribute(hConsole, 12); cout << E[0].draw; break; //inimigos.
+                case 3: SetConsoleTextAttribute(hConsole, 15); cout << P.get_draw(); break; //player.
+                case 4: SetConsoleTextAttribute(hConsole, 8);  cout << B.get_draw(); break; //bomba.
+                case 5: SetConsoleTextAttribute(hConsole, 12); cout << F.get_draw(); break; //chama.
+                case 6: SetConsoleTextAttribute(hConsole, 12); cout << E[0].get_draw(); break; //inimigos.
                 //fim switch.
                 }
             }
@@ -333,27 +130,27 @@ int main()
         if (_kbhit()) {
             keyboard = _getch();
 
-            map[P.y][P.x] = 0; //Apaga o jogador para atualizar sua posição.
+            map[P.get_y()][P.get_x()] = 0; //Apaga o jogador para atualizar sua posição.
 
             //Coloca a bomba se requisitado.
             if (time(NULL) - timer >= 3.5) {
                 if (keyboard == char(32)) {
-                    timer = check_map_bomb(P.facing, P.x, P.y);
+                    timer = check_map_bomb(P.get_facing(), P.get_x(), P.get_y());
                 }
             }
 
-            P.facing = check_map(keyboard, P.x, P.y); //Checa o mapa para movimentar o jogador.
-            map[P.y][P.x] = 3; //Coloca o jogador na sua posição atualizada.
+            P.set_facing(check_map(keyboard, P)); //Checa o mapa para movimentar o jogador.
+            map[P.get_y()][P.get_x()] = 3; //Coloca o jogador na sua posição atualizada.
         }
 
         //Mostra a bomba se escondida.
-        if(!B.exist){
-            B.hidden = false;
+        if(!B.get_exist()){
+            B.set_hidden(false);
         }
-        else if(B.hidden){
-            if(map[B.y][B.x] == 0){
-                map[B.y][B.x] = 4;
-                B.hidden = false;
+        else if(B.get_hidden()){
+            if(map[B.get_y()][B.get_x()] == 0){
+                map[B.get_y()][B.get_x()] = 4;
+                B.set_hidden(false);
             }
         }
 
@@ -361,7 +158,7 @@ int main()
         if (time(NULL) - timer3 > 0.5) {
             bool alive = false;
             for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++) {
-                if (E[i].alive) {
+                if (E[i].get_alive()) {
                     timer3 = enemy_move(i);
                     alive = true;
                 }
@@ -372,29 +169,29 @@ int main()
         }
 
         //Explode a bomba se existir.
-        if (time(NULL) - timer >= 3 && B.exist) {
-            timer2 = explode_bomb(B.x, B.y);
-            P.draw = char(2);
+        if (time(NULL) - timer >= 3 && B.get_exist()) {
+            timer2 = explode_bomb(B.get_x(), B.get_y());
+            P.set_draw(char(2));
         }
 
         //Se existir chamas deixadas pela bomba as extingue depois de um tempo.
-        if (time(NULL) - timer2 >= 0.5 && F.exist) {
-            if (map[F.y - 1][F.x] == 5) {
-                map[F.y - 1][F.x] = 0;
+        if (time(NULL) - timer2 >= 0.5 && F.get_exist()) {
+            if (map[F.get_y() - 1][F.get_x()] == 5) {
+                map[F.get_y() - 1][F.get_x()] = 0;
             }
-            if (map[F.y + 1][F.x] == 5) {
-                map[F.y + 1][F.x] = 0;
+            if (map[F.get_y() + 1][F.get_x()] == 5) {
+                map[F.get_y() + 1][F.get_x()] = 0;
             }
-            if (map[F.y][F.x - 1] == 5) {
-                map[F.y][F.x - 1] = 0;
+            if (map[F.get_y()][F.get_x() - 1] == 5) {
+                map[F.get_y()][F.get_x() - 1] = 0;
             }
-            if (map[F.y][F.x + 1] == 5) {
-                map[F.y][F.x + 1] = 0;
+            if (map[F.get_y()][F.get_x() + 1] == 5) {
+                map[F.get_y()][F.get_x() + 1] = 0;
             }
             if (time(NULL) - timer2 >= 1) {
-                if (map[F.y][F.x] == 5) {
-                    map[F.y][F.x] = 0;
-                    F.exist = false;
+                if (map[F.get_y()][F.get_x()] == 5) {
+                    map[F.get_y()][F.get_x()] = 0;
+                    F.set_exist(false);
                 }
             }
         }
@@ -404,7 +201,7 @@ int main()
     system("cls");
 
 
-    if(P.alive){
+    if(P.get_alive()){
         SetConsoleTextAttribute(hConsole, 10);
         cout << "_____.___.               __      __                    \n";
         cout << "\\__  |   | ____  __ __  /  \\    /  \\____   ____     \n";
@@ -418,7 +215,7 @@ int main()
         cout << "      / _____ / _____    _____   ____   \\_____  \\___   __ ___________ \n";
         cout << "     /   \\  ___\\__   \\  /     \\_/ __ \\   /   |   \\  \\ / // __ \\_  __ \\     \n";
         cout << "     \\    \\_\\  \\/ __  \\|  Y Y  \\  ___/  /    |    \\    /\\  ___/|  | \\/\n";
-        cout << "      \\______  (____  / __|_|  /\\__  >    \______  / \\_ /  \\___  >__|    \n";
+        cout << "      \\______  (____  / __|_|  /\\__  >    \\______  / \\_ /  \\___  >__|    \n";
         cout << "             \\/     \\/       \\/    \\/          \\/           \\/        \n";
     }
 
