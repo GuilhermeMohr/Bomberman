@@ -37,6 +37,8 @@ ifstream map_file;
 const char map_size = 15;
 char map[map_size][map_size];
 
+string GameState = "menu";
+
 char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
     switch (direction)
     {
@@ -322,6 +324,26 @@ int main()
         ///Posiciona a escrita no início do console.
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 
+        if (GameState == "menu"){
+            SetConsoleTextAttribute(hConsole, 12);
+            cout << "▀█████████▄   ▄██████▄    ▄▄▄▄███▄▄▄▄   ▀█████████▄     ▄████████    ▄████████   ▄▄▄▄███▄▄▄▄      ▄████████ ███▄▄▄▄   \n";
+            cout << "  ███    ███ ███    ███ ▄██▀▀▀███▀▀▀██▄   ███    ███   ███    ███   ███    ███ ▄██▀▀▀███▀▀▀██▄   ███    ███ ███▀▀▀██▄ \n";
+            cout << "  ███    ███ ███    ███ ███   ███   ███   ███    ███   ███    █▀    ███    ███ ███   ███   ███   ███    ███ ███   ███ \n";
+            cout << " ▄███▄▄▄██▀  ███    ███ ███   ███   ███  ▄███▄▄▄██▀   ▄███▄▄▄      ▄███▄▄▄▄██▀ ███   ███   ███   ███    ███ ███   ███ \n";
+            cout << "▀▀███▀▀▀██▄  ███    ███ ███   ███   ███ ▀▀███▀▀▀██▄  ▀▀███▀▀▀     ▀▀███▀▀▀▀▀   ███   ███   ███ ▀███████████ ███   ███ \n";
+            cout << "  ███    ██▄ ███    ███ ███   ███   ███   ███    ██▄   ███    █▄  ▀███████████ ███   ███   ███   ███    ███ ███   ███ \n";
+            cout << "  ███    ███ ███    ███ ███   ███   ███   ███    ███   ███    ███   ███    ███ ███   ███   ███   ███    ███ ███   ███ \n";
+            cout << "▄█████████▀   ▀██████▀   ▀█   ███   █▀  ▄█████████▀    ██████████   ███    ███  ▀█   ███   █▀    ███    █▀   ▀█   █▀  \n";
+            
+            if (_kbhit()) {
+                keyboard = _getch();
+                if(keyboard == '\n'){
+                    GameState = "running";
+                }
+            }
+        }
+        else if (GameState == "running"){
+
         ///Imprime o jogo: mapa e personagem.
         for (int h = 0; h < map_size; h++) {
             for (int w = 0; w < map_size; w++) {
@@ -407,6 +429,7 @@ int main()
                     F.exist = false;
                 }
             }
+        }
         }
 
     } //fim do laço do jogo.
