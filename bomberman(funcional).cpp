@@ -150,9 +150,9 @@ int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
     if (map[y][x] == char(2)) { //Matar jogador
         P.alive = false;
     }
-    map[y][x] = 5; //Colocar chama
+    map[y][x] = F.draw; //Colocar chama
 
-    if (map[y - 1][x] != char(209)) {
+    if (map[y - 1][x] != char(219)) {
         kill_enemy(x, y-1);
 
         if (map[y - 1][x] == char(2)) {
@@ -161,7 +161,7 @@ int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
         map[y - 1][x] = F.draw;
     }
 
-    if (map[y + 1][x] != char(209)) {
+    if (map[y + 1][x] != char(219)) {
         kill_enemy(x, y+1);
 
         if (map[y + 1][x] == char(2)) {
@@ -170,7 +170,7 @@ int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
         map[y + 1][x] = F.draw;
     }
 
-    if (map[y][x - 1] != char(209)) {
+    if (map[y][x - 1] != char(219)) {
         kill_enemy(x-1, y);
 
         if (map[y][x - 1] == char(2)) {
@@ -178,7 +178,7 @@ int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
         }
         map[y][x - 1] = F.draw;
     }
-    if (map[y][x + 1] != char(209)) {
+    if (map[y][x + 1] != char(219)) {
         kill_enemy(x+1, y);
 
         if (map[y][x + 1] == char(2)) {
@@ -268,6 +268,7 @@ int main()
     map_file.open("map_file.txt");
     do {
         c = map_file.get();
+
         if (c == '\n') {
             i++;
             ii = 0;
@@ -278,7 +279,7 @@ int main()
             map[i][ii] = char(178);
             ii++;
         } else{
-            map[i][ii] = c;
+            map[i][ii] = ' ';
             ii++;
         }
     } while(!map_file.eof());
@@ -322,6 +323,13 @@ int main()
         map[E[i].y][E[i].x] = E[0].draw;
     };
 
+    //Posição inicial do jogador.
+    do {
+        P.x = rand() % (map_size-1);
+        P.y = rand() % (map_size-1);
+    } while (map[P.y][P.x] != ' ');
+        
+    map[P.y][P.x] = char(2);
 
     //Variavel para a tecla precionada.
     char keyboard;
@@ -330,9 +338,6 @@ int main()
     int timer = 0;
     int timer2 = 0;
     int timer3 = 0;
-
-    //Posição inicial do jogador.
-    map[P.y][P.x] = char(2);
 
     while (P.alive) {
         ///Posiciona a escrita no início do console.
@@ -407,7 +412,7 @@ int main()
             for (int h = 0; h < map_size; h++) {
                 for (int w = 0; w < map_size; w++) {
                     switch (map[h][w]) {
-                    case ' ': SetConsoleTextAttribute(hConsole, 0); cout << " "; break; //caminho.
+                    case ' ': SetConsoleTextAttribute(hConsole, 0); cout << ' '; break; //caminho.
                     case char(219): SetConsoleTextAttribute(hConsole, 8); cout << char(219); break; //parede.
                     case char(178): SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede frágil.
                     case char(2): SetConsoleTextAttribute(hConsole, 15); cout << P.draw; break; //player.
@@ -488,10 +493,8 @@ int main()
                     map[F.y][F.x + 1] = ' ';
                 }
                 if (time(NULL) - timer2 >= 1) {
-                    if (map[F.y][F.x] == E[0].draw) {
-                        map[F.y][F.x] = ' ';
-                        F.exist = false;
-                    }
+                    map[F.y][F.x] = ' ';
+                    F.exist = false;
                 }
             }
         }
