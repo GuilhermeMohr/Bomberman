@@ -53,6 +53,36 @@ void save(int timer = 0, int timer2 = 0, int timer3 = 0){
     cout<<"Salvo\n";
 }
 
+void load_game(){
+    do{
+        ifstream save_file;
+        save_file.open("save.txt");.hidden
+        string load;
+        getline(save_file, load);
+        string var;
+        for(int i=0; i < load.size(); i++){
+            if (load[i] == '='){
+                switch(load[0]){
+                    case 'P': P.x = assign_value('x'); P.y = assign_value('y'); P.facing = assign_value("facing"); P.draw = assign_value("draw"); break;
+                    case 'E': E.x = assign_value('x'); E.y = assign_value('y'); E.facing = assign_value("facing"); E.draw = assign_value("draw"); E.alive = assign_value("alive"); break;
+                    case 'B': B.x = assign_value('x'); B.y = assign_value('y'); B.exist = assign_value("exist"); B.hidden = assign_value("hidden"); B.draw = assign_value("draw"); break;
+                    case 'F': F.x = assign_value('x'); F.y = assign_value('y'); F.exist = assign_value("exist"); F.hidden = assign_value("hidden"); F.draw = assign_value("draw"); break;
+                    case 'T': timer = assign_value('x'); T = assign_value('y'); T = assign_value("facing"); T = assign_value("draw"); break;
+                }
+                switch(load[i-1]){
+                    case 'x':
+                        var = load[i-1];
+                    break;
+                }
+                i++;
+                if(load[i] >= char(48) and load[i] <= char(57)){
+                    int(load[i]);
+                }
+            }
+        }
+    } while(!map_file.eof());
+}
+
 char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
     switch (direction)
     {
@@ -388,7 +418,7 @@ int main()
                     GameState = "running";
                     system("cls");
                 } else if (keyboard == 's'){
-                    //Função carrega jogo.
+                    load_game();
                 }
             }
         } else if (GameState == "paused"){
@@ -400,7 +430,7 @@ int main()
                 if(keyboard == 27){
                     return 0;
                 } else if (keyboard == 's'){
-                    save(timer, timer2, timer3);
+                    save(time(NULL) - timer, time(NULL) - timer2, time(NULL) - timer3);
                 } else if (keyboard == 32){
                     GameState = "running";
                     system("cls");
