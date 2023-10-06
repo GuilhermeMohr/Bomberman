@@ -39,51 +39,65 @@ char map[map_size][map_size];
 
 string GameState = "Open";
 
+//Variáveis para contagem do tempo.
+int timer = 0;
+int timer2 = 0;
+int timer3 = 0;
+
 void save(int timer = 0, int timer2 = 0, int timer3 = 0){
     ofstream save_file;
     save_file.open("save.txt");
-    save_file << "P: x=" << P.x << ", y=" << P.y << ", facing=" << P.facing << ", draw=" << P.draw << "\n";
+    save_file << "P: x=" << P.x << ", y=" << P.y << ", facing=" << P.facing << ", draw=" << P.draw << ", \n";
     for(int i=0; i < sizeof(E) / sizeof(E[i]); i++){
-        save_file << "E: x=" << E[i].x << ", y=" << E[i].y << ", facing=" << E[i].facing << ", draw=" << E[i].draw << ", alive=" << E[i].alive << "\n";
+        save_file << "E: x=" << E[i].x << ", y=" << E[i].y << ", facing=" << E[i].facing << ", draw=" << E[i].draw << ", alive=" << E[i].alive << ", \n";
     }
-    save_file << "B: x=" <<B.x << ", y=" << B.y << ", exist=" << B.exist << ", hidden=" << B.hidden << ", draw=" << B.draw << "\n";
-    save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", draw=" << F.draw << "\n";
-    save_file << "Timers: 1=" << timer << ", 2=" << timer2 << ", 3=" << timer3 << "\n";
+    save_file << "B: x=" << B.x << ", y=" << B.y << ", exist=" << B.exist << ", hidden=" << B.hidden << ", draw=" << B.draw << ", \n";
+    save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", draw=" << F.draw << ", \n";
+    save_file << "Timers: 1=" << timer << ", 2=" << timer2 << ", 3=" << timer3 << ", \n";
     save_file.close();
     cout<<"Salvo\n";
 }
 
-/*
+template <typename I>
+void assign_value(char value, I receiver, string load) {
+    for (int i = 0; load.size(); i++) {
+        if (load[i] == value) {
+            while (load[i] != ',') {
+                i++;
+            }
+            i--;
+            if (load[i] >= char(48) and load[i] <= char(57)) {
+                int temp_value = 0;
+                for (int ii = 1; load[i] >= char(48) and load[i] <= char(57); ii *= 10) {//É um número (0, 9).
+                    temp_value += int(load[i]) * ii;
+                    i--;
+                }
+                receiver = I(temp_value);
+            } else {
+                receiver = I(load[i]);
+            }
+        }
+    }
+}
+
 void load_game(){
+    int enemy_count = 0;
     do{
         ifstream save_file;
-        save_file.open("save.txt");.hidden
+        save_file.open("save.txt");
         string load;
         getline(save_file, load);
         string var;
-        for(int i=0; i < load.size(); i++){
-            if (load[i] == '='){
-                switch(load[0]){
-                    case 'P': P.x = assign_value('x'); P.y = assign_value('y'); P.facing = assign_value("facing"); P.draw = assign_value("draw"); break;
-                    case 'E': E.x = assign_value('x'); E.y = assign_value('y'); E.facing = assign_value("facing"); E.draw = assign_value("draw"); E.alive = assign_value("alive"); break;
-                    case 'B': B.x = assign_value('x'); B.y = assign_value('y'); B.exist = assign_value("exist"); B.hidden = assign_value("hidden"); B.draw = assign_value("draw"); break;
-                    case 'F': F.x = assign_value('x'); F.y = assign_value('y'); F.exist = assign_value("exist"); F.hidden = assign_value("hidden"); F.draw = assign_value("draw"); break;
-                    case 'T': timer = assign_value('x'); T = assign_value('y'); T = assign_value("facing"); T = assign_value("draw"); break;
-                }
-                switch(load[i-1]){
-                    case 'x':
-                        var = load[i-1];
-                    break;
-                }
-                i++;
-                if(load[i] >= char(48) and load[i] <= char(57)){
-                    int(load[i]);
-                }
-            }
+        switch(load[0]){
+            case 'P': assign_value('x', &P.x, load); assign_value('y', &P.y, load); assign_value('f', &P.facing, load); assign_value('d', P.draw, load); break;
+            case 'E': assign_value('x', &E[enemy_count].x, load); assign_value('y', &E[enemy_count].y, load); assign_value('f', &E[enemy_count].facing, load); assign_value('d', &E[enemy_count].draw, load); assign_value('a', &E[enemy_count].alive, load); enemy_count++; break;
+            case 'B': assign_value('x', &B.x, load); assign_value('y', &B.y, load); assign_value('e', &B.exist, load); assign_value('h', B.hidden, load); assign_value('d', B.draw, load); break;
+            case 'F': assign_value('x', &F.x, load); assign_value('y', &F.y, load); assign_value('e', &F.exist, load); assign_value('h', F.hidden, load); assign_value('d', F.draw, load); break;
+            case 'T': assign_value('1', &timer, load); assign_value('2', &timer2, load); assign_value('3', &timer3, load); break;
         }
     } while(!map_file.eof());
 }
-*/
+
 char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
     switch (direction)
     {
@@ -296,7 +310,7 @@ int main()
     char c;
     int i=0;
     int ii=0;
-    map_file.open("C:\000Users\000Usuario\Downloads\map_file.txt");
+    map_file.open("map_file.txt");
     do {
         c = map_file.get();
 
@@ -365,11 +379,6 @@ int main()
     //Variavel para a tecla precionada.
     char keyboard;
 
-    //Variáveis para contagem do tempo.
-    int timer = 0;
-    int timer2 = 0;
-    int timer3 = 0;
-
     while (P.alive) {
         ///Posiciona a escrita no início do console.
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
@@ -419,7 +428,7 @@ int main()
                     GameState = "running";
                     system("cls");
                 } else if (keyboard == 's'){
-                    //load_game();
+                    load_game();
                 }
             }
         } else if (GameState == "paused"){

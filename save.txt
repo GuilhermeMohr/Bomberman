@@ -1,9 +1,9 @@
-P: x=12, y=11, facing= , draw=
-E: x=6, y=1, facing=w, draw=, alive=1
-E: x=6, y=2, facing=a, draw=, alive=1
-E: x=10, y=7, facing=d, draw=, alive=1
-E: x=13, y=8, facing=s, draw=, alive=1
-E: x=7, y=9, facing=d, draw=, alive=1
-B: x=0, y=0, exist=0, hidden=0, draw=ï¿½
-F: x=0, y=0, exist=0, hidden=0, draw=#
-Timers: 1=1696377437, 2=1696377437, 3=1
+P: x=13, y=3, facing= , draw=, 
+E: x=5, y=5, facing=a, draw=, alive=1, 
+E: x=1, y=1, facing=s, draw=, alive=1, 
+E: x=13, y=1, facing=w, draw=, alive=1, 
+E: x=9, y=11, facing=a, draw=, alive=1, 
+E: x=6, y=1, facing=a, draw=, alive=1, 
+B: x=0, y=0, exist=0, hidden=0, draw=Ð, 
+F: x=0, y=0, exist=0, hidden=0, draw=#, 
+Timers: 1=1696552164, 2=1696552164, 3=1, 
