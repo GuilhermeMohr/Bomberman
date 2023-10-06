@@ -53,6 +53,7 @@ void save(int timer = 0, int timer2 = 0, int timer3 = 0){
     cout<<"Salvo\n";
 }
 
+/*
 void load_game(){
     do{
         ifstream save_file;
@@ -82,7 +83,7 @@ void load_game(){
         }
     } while(!map_file.eof());
 }
-
+*/
 char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
     switch (direction)
     {
@@ -295,7 +296,7 @@ int main()
     char c;
     int i=0;
     int ii=0;
-    map_file.open("map_file.txt");
+    map_file.open("C:\000Users\000Usuario\Downloads\map_file.txt");
     do {
         c = map_file.get();
 
@@ -418,7 +419,7 @@ int main()
                     GameState = "running";
                     system("cls");
                 } else if (keyboard == 's'){
-                    load_game();
+                    //load_game();
                 }
             }
         } else if (GameState == "paused"){
