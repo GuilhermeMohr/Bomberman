@@ -47,34 +47,38 @@ int timer3 = 0;
 void save(int timer = 0, int timer2 = 0, int timer3 = 0){
     ofstream save_file;
     save_file.open("save.txt");
-    save_file << "P: x=" << P.x << ", y=" << P.y << ", facing=" << P.facing << ", draw=" << P.draw << ", \n";
+    save_file << "P: x=" << P.x << ", y=" << P.y << ", facing=" << int(P.facing) << ", draw=" << int(P.draw) << ", \n";
     for(int i=0; i < sizeof(E) / sizeof(E[i]); i++){
-        save_file << "E: x=" << E[i].x << ", y=" << E[i].y << ", facing=" << E[i].facing << ", draw=" << E[i].draw << ", alive=" << E[i].alive << ", \n";
+        save_file << "E: x=" << E[i].x << ", y=" << E[i].y << ", facing=" << int(E[i].facing) << ", draw=" << int(E[i].draw) << ", alive=" << E[i].alive << ", \n";
     }
-    save_file << "B: x=" << B.x << ", y=" << B.y << ", exist=" << B.exist << ", hidden=" << B.hidden << ", draw=" << B.draw << ", \n";
-    save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", draw=" << F.draw << ", \n";
+    save_file << "B: x=" << B.x << ", y=" << B.y << ", exist=" << B.exist << ", hidden=" << B.hidden << ", draw=" << int(B.draw) << ", \n";
+    save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", draw=" << int(F.draw) << ", \n";
     save_file << "Timers: 1=" << timer << ", 2=" << timer2 << ", 3=" << timer3 << ", \n";
     save_file.close();
     cout<<"Salvo\n";
 }
 
 template <typename I>
-void assign_value(char value, I receiver, string load) {
-    for (int i = 0; load.size(); i++) {
+void assign_value(char value, I* receiver, string load) {
+    for (int i = 0; i < load.size(); i++) {
         if (load[i] == value) {
             while (load[i] != ',') {
                 i++;
             }
             i--;
+            int temp_value = 0;
             if (load[i] >= char(48) and load[i] <= char(57)) {
-                int temp_value = 0;
                 for (int ii = 1; load[i] >= char(48) and load[i] <= char(57); ii *= 10) {//É um número (0, 9).
                     temp_value += int(load[i]) * ii;
                     i--;
                 }
-                receiver = I(temp_value);
-            } else {
-                receiver = I(load[i]);
+                *receiver = I(temp_value-int('0'));
+            } else{
+                for (int ii = 1; load[i] >= char(48) and load[i] <= char(57); ii *= 10) {//É um número (0, 9).
+                    temp_value += int(load[i]) * ii;
+                    i--;
+                }
+                *receiver = I(char(temp_value));
             }
         }
     }
@@ -89,10 +93,10 @@ void load_game(){
         getline(save_file, load);
         string var;
         switch(load[0]){
-            case 'P': assign_value('x', &P.x, load); assign_value('y', &P.y, load); assign_value('f', &P.facing, load); assign_value('d', P.draw, load); break;
+            case 'P': assign_value('x', &P.x, load); assign_value('y', &P.y, load); assign_value('f', &P.facing, load); assign_value('d', &P.draw, load); break;
             case 'E': assign_value('x', &E[enemy_count].x, load); assign_value('y', &E[enemy_count].y, load); assign_value('f', &E[enemy_count].facing, load); assign_value('d', &E[enemy_count].draw, load); assign_value('a', &E[enemy_count].alive, load); enemy_count++; break;
-            case 'B': assign_value('x', &B.x, load); assign_value('y', &B.y, load); assign_value('e', &B.exist, load); assign_value('h', B.hidden, load); assign_value('d', B.draw, load); break;
-            case 'F': assign_value('x', &F.x, load); assign_value('y', &F.y, load); assign_value('e', &F.exist, load); assign_value('h', F.hidden, load); assign_value('d', F.draw, load); break;
+            case 'B': assign_value('x', &B.x, load); assign_value('y', &B.y, load); assign_value('e', &B.exist, load); assign_value('h', &B.hidden, load); assign_value('d', &B.draw, load); break;
+            case 'F': assign_value('x', &F.x, load); assign_value('y', &F.y, load); assign_value('e', &F.exist, load); assign_value('h', &F.hidden, load); assign_value('d', &F.draw, load); break;
             case 'T': assign_value('1', &timer, load); assign_value('2', &timer2, load); assign_value('3', &timer3, load); break;
         }
     } while(!map_file.eof());
@@ -331,51 +335,6 @@ int main()
 
     map_file.close();
 
-    B.draw = char(208);
-
-    F.x = 0; F.y = 0;
-    F.draw = '#';
-
-    P.x = 5; P.y = 5;
-    P.facing = 'd';
-    P.draw = char(2);
-
-    //Coloca inimigos no mapa.
-    for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++)
-    {
-        switch(rand()%4){
-            case 1:
-                E[i].facing = 'a';
-            break;
-            case 2:
-                E[i].facing = 's';
-            break;
-            case 3:
-                E[i].facing = 'd';
-            break;
-            case 4:
-                E[i].facing = 'w';
-            break;
-            default:
-                E[i].facing = 'w';
-        }
-
-        do {
-            E[i].x = rand() % (map_size-1);
-            E[i].y = rand() % (map_size-1);
-        } while (map[E[i].y][E[i].x] != ' ');
-
-        map[E[i].y][E[i].x] = E[0].draw;
-    };
-
-    //Posição inicial do jogador.
-    do {
-        P.x = rand() % (map_size-1);
-        P.y = rand() % (map_size-1);
-    } while (map[P.y][P.x] != ' ');
-        
-    map[P.y][P.x] = char(2);
-
     //Variavel para a tecla precionada.
     char keyboard;
 
@@ -425,10 +384,57 @@ int main()
             if (_kbhit()) {
                 keyboard = _getch();
                 if(keyboard == 'n'){
+                    B.draw = char(208);
+
+                    F.x = 0; F.y = 0;
+                    F.draw = '#';
+
+                    P.x = 5; P.y = 5;
+                    P.facing = 'd';
+                    P.draw = char(2);
+
+                    //Coloca inimigos no mapa.
+                    for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++)
+                    {
+                        switch (rand() % 4) {
+                        case 1:
+                            E[i].facing = 'a';
+                            break;
+                        case 2:
+                            E[i].facing = 's';
+                            break;
+                        case 3:
+                            E[i].facing = 'd';
+                            break;
+                        case 4:
+                            E[i].facing = 'w';
+                            break;
+                        default:
+                            E[i].facing = 'w';
+                        }
+
+                        do {
+                            E[i].x = rand() % (map_size - 1);
+                            E[i].y = rand() % (map_size - 1);
+                        } while (map[E[i].y][E[i].x] != ' ');
+
+                        map[E[i].y][E[i].x] = E[0].draw;
+                    };
+
+                    //Posição inicial do jogador.
+                    do {
+                        P.x = rand() % (map_size - 1);
+                        P.y = rand() % (map_size - 1);
+                    } while (map[P.y][P.x] != ' ');
+
+                    map[P.y][P.x] = char(2);
+
                     GameState = "running";
                     system("cls");
                 } else if (keyboard == 's'){
                     load_game();
+                    GameState = "running";
+                    system("cls");
                 }
             }
         } else if (GameState == "paused"){
