@@ -44,6 +44,10 @@ int timer = 0;
 int timer2 = 0;
 int timer3 = 0;
 
+//Número de parede destruída.
+int walls_destroyed = 0;
+int** walls_destroyed_array = new int*[walls_destroyed];
+
 void save(int timer = 0, int timer2 = 0, int timer3 = 0){
     ofstream save_file;
     save_file.open("save.txt");
@@ -51,8 +55,8 @@ void save(int timer = 0, int timer2 = 0, int timer3 = 0){
     for(int i=0; i < sizeof(E) / sizeof(E[i]); i++){
         save_file << "E: x=" << E[i].x << ", y=" << E[i].y << ", facing=" << int(E[i].facing) << ", draw=" << int(E[i].draw) << ", alive=" << E[i].alive << ", \n";
     }
-    save_file << "B: x=" << B.x << ", y=" << B.y << ", exist=" << B.exist << ", hidden=" << B.hidden << ", draw=" << int(B.draw) << ", \n";
-    save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", draw=" << int(F.draw) << ", \n";
+    save_file << "B: x=" << B.x << ", y=" << B.y << ", exist=" << B.exist << ", hidden=" << B.hidden << ", \n";
+    save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", \n";
     save_file << "Timers: 1=" << timer << ", 2=" << timer2 << ", 3=" << timer3 << ", \n";
     save_file.close();
     cout<<"Salvo\n";
@@ -67,39 +71,31 @@ void assign_value(char value, I* receiver, string load) {
             }
             i--;
             int temp_value = 0;
-            if (load[i] >= char(48) and load[i] <= char(57)) {
-                for (int ii = 1; load[i] >= char(48) and load[i] <= char(57); ii *= 10) {//É um número (0, 9).
-                    temp_value += int(load[i]) * ii;
-                    i--;
-                }
-                *receiver = I(temp_value-int('0'));
-            } else{
-                for (int ii = 1; load[i] >= char(48) and load[i] <= char(57); ii *= 10) {//É um número (0, 9).
-                    temp_value += int(load[i]) * ii;
-                    i--;
-                }
-                *receiver = I(char(temp_value));
+            for (int ii = 1; load[i] >= char(48) and load[i] <= char(57); ii *= 10) {//É um número (0, 9).
+                temp_value += (int(load[i]) - '0') * ii;
+                i--;
             }
+            *receiver = I(temp_value);
+            return;
         }
     }
 }
 
 void load_game(){
     int enemy_count = 0;
+    ifstream save_file;
+    save_file.open("save.txt");
+    string load;
     do{
-        ifstream save_file;
-        save_file.open("save.txt");
-        string load;
         getline(save_file, load);
-        string var;
         switch(load[0]){
             case 'P': assign_value('x', &P.x, load); assign_value('y', &P.y, load); assign_value('f', &P.facing, load); assign_value('d', &P.draw, load); break;
             case 'E': assign_value('x', &E[enemy_count].x, load); assign_value('y', &E[enemy_count].y, load); assign_value('f', &E[enemy_count].facing, load); assign_value('d', &E[enemy_count].draw, load); assign_value('a', &E[enemy_count].alive, load); enemy_count++; break;
-            case 'B': assign_value('x', &B.x, load); assign_value('y', &B.y, load); assign_value('e', &B.exist, load); assign_value('h', &B.hidden, load); assign_value('d', &B.draw, load); break;
-            case 'F': assign_value('x', &F.x, load); assign_value('y', &F.y, load); assign_value('e', &F.exist, load); assign_value('h', &F.hidden, load); assign_value('d', &F.draw, load); break;
+            case 'B': assign_value('x', &B.x, load); assign_value('y', &B.y, load); assign_value('e', &B.exist, load); assign_value('h', &B.hidden, load); break;
+            case 'F': assign_value('x', &F.x, load); assign_value('y', &F.y, load); assign_value('e', &F.exist, load); assign_value('h', &F.hidden, load); break;
             case 'T': assign_value('1', &timer, load); assign_value('2', &timer2, load); assign_value('3', &timer3, load); break;
         }
-    } while(!map_file.eof());
+    } while(!save_file.eof());
 }
 
 char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
@@ -193,6 +189,27 @@ void kill_enemy(int x, int y){ //Mata um inimigo
     }
 }
 
+void wall_break(int x, int y) {
+    walls_destroyed += 1;
+    int** temp_array = new int* [walls_destroyed];
+    for (int i = 0; i < walls_destroyed - 1; i++) {
+        temp_array[i] = walls_destroyed_array[i];
+        //delete walls_destroyed_array[i];
+    }
+    delete walls_destroyed_array;
+
+    temp_array[walls_destroyed - 1] = new int[2];
+    temp_array[walls_destroyed - 1][0] = x;
+    temp_array[walls_destroyed - 1][1] = y;
+    walls_destroyed_array = new int* [walls_destroyed];
+
+    for (int i = 0; i < walls_destroyed; i++) {
+        walls_destroyed_array[i] = temp_array[i];
+        //delete temp_array[i];
+    }
+    delete temp_array;
+}
+
 int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
     kill_enemy(x, y); //Matar inimigo
 
@@ -207,6 +224,10 @@ int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
         if (map[y - 1][x] == char(2)) {
             P.alive = false;
         }
+        if (map[y - 1][x] == char(178)) {
+            wall_break(x, y - 1);
+        }
+
         map[y - 1][x] = F.draw;
     }
 
@@ -216,6 +237,10 @@ int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
         if (map[y + 1][x] == char(2)) {
             P.alive = false;
         }
+        if (map[y + 1][x] == char(178)) {
+            wall_break(x, y + 1);
+        }
+
         map[y + 1][x] = F.draw;
     }
 
@@ -225,6 +250,10 @@ int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
         if (map[y][x - 1] == char(2)) {
             P.alive = false;
         }
+        if (map[y][x - 1] == char(178)) {
+            wall_break(x - 1, y);
+        }
+
         map[y][x - 1] = F.draw;
     }
     if (map[y][x + 1] != char(219)) {
@@ -233,6 +262,10 @@ int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
         if (map[y][x + 1] == char(2)) {
             P.alive = false;
         }
+        if (map[y][x + 1] == char(178)) {
+            wall_break(x + 1, y);
+        }
+
         map[y][x + 1] = F.draw;
     }
     F.x = x;
@@ -338,6 +371,9 @@ int main()
     //Variavel para a tecla precionada.
     char keyboard;
 
+    B.draw = char(208);
+    F.draw = '#';
+
     while (P.alive) {
         ///Posiciona a escrita no início do console.
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
@@ -384,11 +420,7 @@ int main()
             if (_kbhit()) {
                 keyboard = _getch();
                 if(keyboard == 'n'){
-                    B.draw = char(208);
-
                     F.x = 0; F.y = 0;
-                    F.draw = '#';
-
                     P.x = 5; P.y = 5;
                     P.facing = 'd';
                     P.draw = char(2);
@@ -435,6 +467,16 @@ int main()
                     load_game();
                     GameState = "running";
                     system("cls");
+                    map[P.y][P.x] = P.draw;
+                    for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++) {
+                        map[E[i].y][E[i].x] = E[i].draw;
+                    }
+                    if (B.exist) {
+                        map[B.y][B.x] = B.draw;
+                    }
+                    if (F.exist) {
+                        map[F.y][F.x] = F.draw;
+                    }
                 }
             }
         } else if (GameState == "paused"){
@@ -548,6 +590,11 @@ int main()
     } //fim do laço do jogo.
 
     system("cls");
+
+    for (int i = 0; i < walls_destroyed; i++) {
+        delete walls_destroyed_array[i];
+    }
+    delete walls_destroyed_array;
 
 
     if(P.alive){
