@@ -147,6 +147,24 @@ void load_game(){
     } while(!save_file.eof());
 }
 
+void wall_break(int x, int y) {
+    walls_destroyed += 1;
+    int** temp_array = new int* [walls_destroyed];
+    for (int i = 0; i < walls_destroyed - 1; i++) {
+        temp_array[i] = walls_destroyed_array[i];
+    }
+    delete walls_destroyed_array;
+    temp_array[walls_destroyed - 1] = new int[2];
+    temp_array[walls_destroyed - 1][0] = x;
+    temp_array[walls_destroyed - 1][1] = y;
+    walls_destroyed_array = new int* [walls_destroyed];
+
+    for (int i = 0; i < walls_destroyed; i++) {
+        walls_destroyed_array[i] = temp_array[i];
+    }
+    delete temp_array;
+}
+
 char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
     switch (direction)
     {
@@ -236,24 +254,6 @@ void kill_enemy(int x, int y){ //Mata um inimigo
             E[i].alive = false;
         }
     }
-}
-
-void wall_break(int x, int y) {
-    walls_destroyed += 1;
-    int** temp_array = new int* [walls_destroyed];
-    for (int i = 0; i < walls_destroyed - 1; i++) {
-        temp_array[i] = walls_destroyed_array[i];
-    }
-    delete walls_destroyed_array;
-    temp_array[walls_destroyed - 1] = new int[2];
-    temp_array[walls_destroyed - 1][0] = x;
-    temp_array[walls_destroyed - 1][1] = y;
-    walls_destroyed_array = new int* [walls_destroyed];
-
-    for (int i = 0; i < walls_destroyed; i++) {
-        walls_destroyed_array[i] = temp_array[i];
-    }
-    delete temp_array;
 }
 
 int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
