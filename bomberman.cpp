@@ -5,13 +5,40 @@
 #include <cstdlib>
 #include <fstream>
 #include <string>
-#include "bomb_class.h"
-#include "bomb_func.h"
+
+#include "bomb_class.hpp"
+#include "SaveLoad.hpp"
+#include "bomb_func.hpp"
 
 using namespace std;
 
-ifstream map_file;
+obj B; //Bomba
 
+obj F; //Chama
+
+creature P; //Player
+
+creature E[5]; //Inimigo
+
+int map_size_x;
+int map_size_y;
+char** map;
+
+string GameState = "Open";
+
+//Variáveis para contagem do tempo.
+int timer = 0;
+int timer2 = 0;
+int timer3 = 0;
+
+//Número de parede destruída.
+int walls_destroyed = 0;
+int** walls_destroyed_array = new int*[walls_destroyed];
+
+
+///////////////////////////////////////////////\    /\//////////////////////////////////////////////
+//////////////////////////////////////////////  \  /  \/////////////////////////////////////////////
+/////////////////////////////////////////////    \/    \////////////////////////////////////////////
 int main()
 {
     ///ALERTA: N�O MODIFICAR O TRECHO DE C�DIGO, A SEGUIR.
@@ -39,159 +66,307 @@ int main()
     //Recebe a entrada e saída padrão.
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    char c;
-    int i=0;
-    int ii=0;
+    
+
+    ifstream map_file;
     map_file.open("map_file.txt");
+    string c;
+    int temp_value = 0;
+    int y=0;
+
+    getline(map_file, c); //Pega o x e y do mapa.
+    for (int i = 0; i < c.size(); i++) {
+        if (c[i] == 'y') {
+            while (c[i] != ',') {
+                i++;
+            }
+            i--;
+
+            for (int ii = 1; c[i] >= char(48) and c[i] <= char(57); ii *= 10) {//É um número (0, 9).
+                temp_value += (int(c[i]) - '0') * ii;
+                i--;
+            }
+
+            map = new char* [temp_value];
+            map_size_y = temp_value;
+
+            temp_value = 0;
+
+            while (c[i] != 'x') {
+                i--;
+            }
+            while (c[i] != ',') {
+                i++;
+            }
+            i--;
+
+            for (int ii = 1; c[i] >= char(48) and c[i] <= char(57); ii *= 10) {//É um número (0, 9).
+                temp_value += (int(c[i]) - '0') * ii;
+                i--;
+            }
+
+            for (int i = 0; i < map_size_y; i++) {
+                map[i] = new char[temp_value];
+            }
+
+            map_size_x = temp_value;
+            break;
+        }
+    }
     do {
-        c = map_file.get();
-        if (c == '\n') {
-            i++;
-            ii = 0;
+        getline(map_file, c);
+        for (int i = 0; i < c.size()+1; i++) {
+            if (c[i] == '@') {
+                map[y][i] = char(219);
+            }
+            else if (c[i] == '#') {
+                map[y][i] = char(178);
+            }
+            else if (c[i] == ' ') {
+                map[y][i] = ' ';
+            }
         }
-        else {
-            map[i][ii] = int(c) - '0';
-            ii++;
-        }
-    } while(!map_file.eof());
+        y++;
+    } while (!map_file.eof());
 
     map_file.close();
 
-    B.set_draw(char(208));
+    ofstream debug;
+    debug.open("debug.txt");
 
-    F.set_coord(0,0);
-    F.set_draw('#');
-
-    P.set_coord(5,5);
-    P.set_facing('d');
-    P.set_draw(char(2));
-
-    //Coloca inimigos no mapa.
-    for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++)
-    {
-        switch(rand()%4){
-            case 1:
-                E[i].set_facing('a');
-            break;
-            case 2:
-                E[i].set_facing('s');
-            break;
-            case 3:
-                E[i].set_facing('d');
-            break;
-            case 4:
-                E[i].set_facing('w');
-            break;
-            default:
-                E[i].set_facing('w');
+    for (int i = 0; i < map_size_y; i++) {
+        for (int ii = 0; ii < map_size_x; ii++) {
+            if (map[i][ii] == char(219)) {
+                debug << '@';
+            } else if (map[i][ii] == char(178)) {
+                debug << '#';
+            } else {
+                debug << ' ';
+            }
+            
         }
+        debug << '\n';
+    }
 
-        do {
-            E[i].set_coord(rand() % (map_size-1), rand() % (map_size-1));
-        } while (map[E[i].get_y()][E[i].get_x()] != 0);
-
-        map[E[i].get_y()][E[i].get_x()] = 6;
-    };
-
+    debug.close();
 
     //Variavel para a tecla precionada.
     char keyboard;
 
-    //Variáveis para contagem do tempo.
-    int timer = 0;
-    int timer2 = 0;
-    int timer3 = 0;
+    B.draw = char(208);
+    F.draw = '#';
 
-    //Posição inicial do jogador.
-    map[P.get_y()][P.get_x()] = 3;
-
-    while (P.get_alive()) {
+    while (P.alive) {
         ///Posiciona a escrita no início do console.
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 
-        ///Imprime o jogo: mapa e personagem.
-        for (int h = 0; h < map_size; h++) {
-            for (int w = 0; w < map_size; w++) {
-                switch (map[h][w]) {
-                case 0: SetConsoleTextAttribute(hConsole, 0); cout << " "; break; //caminho.
-                case 1: SetConsoleTextAttribute(hConsole, 8); cout << char(219); break; //parede.
-                case 2: SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede frágil.
-                case 3: SetConsoleTextAttribute(hConsole, 15); cout << P.get_draw(); break; //player.
-                case 4: SetConsoleTextAttribute(hConsole, 8);  cout << B.get_draw(); break; //bomba.
-                case 5: SetConsoleTextAttribute(hConsole, 12); cout << F.get_draw(); break; //chama.
-                case 6: SetConsoleTextAttribute(hConsole, 12); cout << E[0].get_draw(); break; //inimigos.
-                //fim switch.
+        if (GameState == "Open"){
+            SetConsoleTextAttribute(hConsole, 12);
+            cout << " ______   _______  _______  ______   _______  _______  _______  _______  _        \n";
+            cout << "(  ___ \\ (  ___  )(       )(  ___ \\ (  ____ \\(  ____ )(       )(  ___  )( (    /| \n";
+            cout << "| (   ) )| (   ) || () () || (   ) )| (    \\/| (    )|| () () || (   ) ||  \\  ( | \n";
+            cout << "| (__/ / | |   | || || || || (__/ / | (__    | (____)|| || || || (___) ||   \\ | | \n";
+            cout << "|  __ (  | |   | || |(_)| ||  __ (  |  __)   |     __)| |(_)| ||  ___  || (\\ \\) | \n";
+            cout << "| (  \\ \\ | |   | || |   | || (  \\ \\ | (      | (\\ (   | |   | || (   ) || | \\   | \n";
+            cout << "| )___) )| (___) || )   ( || )___) )| (____/\\| ) \\ \\__| )   ( || )   ( || )  \\  | \n";
+            cout << "|/ \\___/ (_______)|/     \\||/ \\___/ (_______/|/   \\__/|/     \\||/     \\||/    )_) \n";
+            cout << "\n\n";
+
+            cout << " /\\  _  _  __|_ _    _  _ _  _  _  _    _  _  _ _    . _  _  _  _| \n";
+            cout << "/~~\\|_)(/_|  | (/_  (/__\\|_)(_|(_ (_)  |_)(_|| (_|   |(_)(_|(_|| . \n";
+            cout << "    |                    |             |            L|    _|       \n";
+
+
+            if (_kbhit()) {
+                keyboard = _getch();
+                if(keyboard == 32){
+                    GameState = "menu";
+                    system("cls");
                 }
             }
+        } else if (GameState == "menu"){
+            cout << "     __                   __                            _ __  \n";
+            cout << "  /\\ \\ \\_____   _____     \\ \\  ___   __ _  ___         | '_ \\ \n";
+            cout << " /  \\/ / _ \\ \\ / / _ \\     \\ \\/ _ \\ / _` |/ _ \\        | | | |\n";
+            cout << "/ /\\  / (_) \\ V / (_) | /\\_/ / (_) | (_| | (_) |       |_| |_|\n";
+            cout << "\\_\\ \\/ \\___/ \\_/ \\___/  \\___/ \\___/ \\__, |\\___/      \n";
+            cout << "                                    |___/                      \n";
             cout << "\n";
-        } //fim for mapa.
+            cout << "   __                      __       _                    ___     \n";
+            cout << "   \\ \\  ___   __ _  ___   / _\\ __ _| |_   _____         / __|    \n";
+            cout << "    \\ \\/ _ \\ / _` |/ _ \\  \\ \\ / _` | \\ \\ / / _ \\        \\__ \\    \n";
+            cout << " /\\_/ / (_) | (_| | (_) | _\\ \\ (_| | |\\ V / (_) |       |___/    \n";
+            cout << " \\___/ \\___/ \\__, |\\___/  \\__/\\__,_|_| \\_/ \\___/           \n";
+            cout << "             |___/                                                 \n";
 
-        ///executa os movimentos.
-        if (_kbhit()) {
-            keyboard = _getch();
+            if (_kbhit()) {
+                keyboard = _getch();
+                if(keyboard == 'n'){
+                    F.x = 0; F.y = 0;
+                    P.x = 5; P.y = 5;
+                    P.facing = 'd';
+                    P.draw = char(2);
 
-            map[P.get_y()][P.get_x()] = 0; //Apaga o jogador para atualizar sua posição.
+                    //Coloca inimigos no mapa.
+                    for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++)
+                    {
+                        switch (rand() % 4) {
+                        case 1:
+                            E[i].facing = 'a';
+                            break;
+                        case 2:
+                            E[i].facing = 's';
+                            break;
+                        case 3:
+                            E[i].facing = 'd';
+                            break;
+                        case 4:
+                            E[i].facing = 'w';
+                            break;
+                        default:
+                            E[i].facing = 'w';
+                        }
 
-            //Coloca a bomba se requisitado.
-            if (time(NULL) - timer >= 3.5) {
-                if (keyboard == char(32)) {
-                    timer = check_map_bomb(P.get_facing(), P.get_x(), P.get_y());
+                        do {
+                            E[i].x = rand() % (map_size_x - 1);
+                            E[i].y = rand() % (map_size_y - 1);
+                        } while (map[E[i].y][E[i].x] != ' ');
+
+                        map[E[i].y][E[i].x] = E[0].draw;
+                    };
+
+                    //Posição inicial do jogador.
+                    do {
+                        P.x = rand() % (map_size_x - 1);
+                        P.y = rand() % (map_size_y - 1);
+                    } while (map[P.y][P.x] != ' ');
+
+                    map[P.y][P.x] = char(2);
+
+                    GameState = "running";
+                    system("cls");
+                } else if (keyboard == 's'){
+                    load_game();
+                    GameState = "running";
+                    system("cls");
+                    map[P.y][P.x] = P.draw;
+                    for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++) {
+                        if (E[i].alive) {
+                            map[E[i].y][E[i].x] = E[i].draw;
+                        }
+                    }
+                    if (B.exist) {
+                        map[B.y][B.x] = B.draw;
+                    }
+                    if (F.exist) {
+                        map[F.y][F.x] = F.draw;
+                    }
+                }
+            }
+        } else if (GameState == "paused"){
+            cout<<"Voltar (aperte espaco)\n";
+            cout<<"Salvar (aperte S)\n";
+            cout<<"Sair (aperte esc)\n";
+            if (_kbhit()) {
+                keyboard = _getch();
+                if(keyboard == 27){
+                    return 0;
+                } else if (keyboard == 's'){
+                    save(time(NULL) - timer, time(NULL) - timer2, time(NULL) - timer3);
+                } else if (keyboard == 32){
+                    GameState = "running";
+                    system("cls");
                 }
             }
 
-            P.set_facing(check_map(keyboard, P)); //Checa o mapa para movimentar o jogador.
-            map[P.get_y()][P.get_x()] = 3; //Coloca o jogador na sua posição atualizada.
-        }
+        } else if (GameState == "running"){
+            ///Imprime o jogo: mapa e personagem.
+            for (int h = 0; h < map_size_y; h++) {
+                for (int w = 0; w < map_size_x; w++) {
+                    switch (map[h][w]) {
+                    case ' ': SetConsoleTextAttribute(hConsole, 0); cout << ' '; break; //caminho.
+                    case char(219): SetConsoleTextAttribute(hConsole, 8); cout << char(219); break; //parede.
+                    case char(178): SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede frágil.
+                    case char(2): SetConsoleTextAttribute(hConsole, 15); cout << P.draw; break; //player.
+                    case char(208): SetConsoleTextAttribute(hConsole, 8);  cout << B.draw; break; //bomba.
+                    case '#': SetConsoleTextAttribute(hConsole, 12); cout << F.draw; break; //chama.
+                    case char(1): SetConsoleTextAttribute(hConsole, 12); cout << E[0].draw; break; //inimigos.
+                    //fim switch.
+                    }
+                }
+                cout << "\n";
+            } //fim for mapa.
 
-        //Mostra a bomba se escondida.
-        if(!B.get_exist()){
-            B.set_hidden(false);
-        }
-        else if(B.get_hidden()){
-            if(map[B.get_y()][B.get_x()] == 0){
-                map[B.get_y()][B.get_x()] = 4;
-                B.set_hidden(false);
+            ///executa os movimentos.
+            if (_kbhit()) {
+                keyboard = _getch();
+
+                if(keyboard == 27){
+                    GameState = "paused";
+                    system("cls");
+                }
+
+                map[P.y][P.x] = ' '; //Apaga o jogador para atualizar sua posição.
+
+                //Coloca a bomba se requisitado.
+                if (time(NULL) - timer >= 3.5) {
+                    if (keyboard == char(32)) {
+                        timer = check_map_bomb(P.facing, P.x, P.y);
+                    }
+                }
+
+                P.facing = check_map(keyboard, P.x, P.y); //Checa o mapa para movimentar o jogador.
+                map[P.y][P.x] = char(2); //Coloca o jogador na sua posição atualizada.
             }
-        }
 
-        //Inimigo anda.
-        if (time(NULL) - timer3 > 0.5) {
-            bool alive = false;
-            for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++) {
-                if (E[i].get_alive()) {
-                    timer3 = enemy_move(i);
-                    alive = true;
+            //Mostra a bomba se escondida.
+            if(!B.exist){
+                B.hidden = false;
+            }
+            else if(B.hidden){
+                if(map[B.y][B.x] == ' '){
+                    map[B.y][B.x] = B.draw;
+                    B.hidden = false;
                 }
             }
-            if(!alive){
-                break;
-            }
-        }
 
-        //Explode a bomba se existir.
-        if (time(NULL) - timer >= 3 && B.get_exist()) {
-            timer2 = explode_bomb(B.get_x(), B.get_y());
-            P.set_draw(char(2));
-        }
+            //Inimigo anda.
+            if (time(NULL) - timer3 > 0.5) {
+                bool alive = false;
+                for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++) {
+                    if (E[i].alive) {
+                        timer3 = enemy_move(i);
+                        alive = true;
+                    }
+                }
+                if(!alive){
+                    break;
+                }
+            }
 
-        //Se existir chamas deixadas pela bomba as extingue depois de um tempo.
-        if (time(NULL) - timer2 >= 0.5 && F.get_exist()) {
-            if (map[F.get_y() - 1][F.get_x()] == 5) {
-                map[F.get_y() - 1][F.get_x()] = 0;
+            //Explode a bomba se existir.
+            if (time(NULL) - timer >= 3 && B.exist) {
+                timer2 = explode_bomb(B.x, B.y);
+                P.draw = char(2);
             }
-            if (map[F.get_y() + 1][F.get_x()] == 5) {
-                map[F.get_y() + 1][F.get_x()] = 0;
-            }
-            if (map[F.get_y()][F.get_x() - 1] == 5) {
-                map[F.get_y()][F.get_x() - 1] = 0;
-            }
-            if (map[F.get_y()][F.get_x() + 1] == 5) {
-                map[F.get_y()][F.get_x() + 1] = 0;
-            }
-            if (time(NULL) - timer2 >= 1) {
-                if (map[F.get_y()][F.get_x()] == 5) {
-                    map[F.get_y()][F.get_x()] = 0;
-                    F.set_exist(false);
+
+            //Se existir chamas deixadas pela bomba as extingue depois de um tempo.
+            if (time(NULL) - timer2 >= 0.5 && F.exist) {
+                if (map[F.y - 1][F.x] == F.draw) {
+                    map[F.y - 1][F.x] = ' ';
+                }
+                if (map[F.y + 1][F.x] == F.draw) {
+                    map[F.y + 1][F.x] = ' ';
+                }
+                if (map[F.y][F.x - 1] == F.draw) {
+                    map[F.y][F.x - 1] = ' ';
+                }
+                if (map[F.y][F.x + 1] == F.draw) {
+                    map[F.y][F.x + 1] = ' ';
+                }
+                if (time(NULL) - timer2 >= 1) {
+                    map[F.y][F.x] = ' ';
+                    F.exist = false;
                 }
             }
         }
@@ -200,8 +375,18 @@ int main()
 
     system("cls");
 
+    for (int i = 0; i < walls_destroyed; i++) {
+        delete walls_destroyed_array[i];
+    }
+    delete walls_destroyed_array;
 
-    if(P.get_alive()){
+    for (int i = 0; i < map_size_x; i++) {
+        delete map[i];
+    }
+    delete map;
+
+
+    if(P.alive){
         SetConsoleTextAttribute(hConsole, 10);
         cout << "_____.___.               __      __                    \n";
         cout << "\\__  |   | ____  __ __  /  \\    /  \\____   ____     \n";

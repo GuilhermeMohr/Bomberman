@@ -2,6 +2,7 @@
 #define BOMB_FUNC
 
 #include "bomb_class.hpp"
+#include "SaveLoad.hpp"
 
 //char check_map(char direction, creature &caracter);
 char check_map(char direction, int& x, int& y);

@@ -1,6 +1,5 @@
 #include <time.h>
 #include "bomb_func.hpp"
-#include "bomb_class.hpp"
 
 /*char check_map(char direction, creature& caracter) { //Move os carinhas pelo mapa.
     switch (direction)

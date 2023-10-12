@@ -1,15 +1,18 @@
 #pragma once
 
-#include <iostream> //Cout, Cin, etc...
+#include <iostream>
+#include <fstream>
+#include <string>
+#include "bomb_class.hpp"
 
 using namespace std;
 
-void save(int timer = 0, int timer2 = 0, int timer3 = 0);
+void save(int timer, int timer2, int timer3);
 template <typename I>
 void assign_value(char value, I* receiver, string load);
 void load_game();
 void wall_break(int x, int y);
 
 //Número de parede destruída.
-int walls_destroyed = 0;
-int** walls_destroyed_array = new int* [walls_destroyed];
+extern int walls_destroyed;
+extern int** walls_destroyed_array;

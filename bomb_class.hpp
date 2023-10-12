@@ -1,6 +1,6 @@
 #ifndef BOMB_CLASS
 #define BOMB_CLASS
-
+/*
 struct obj {
     private:
         int x, y;
@@ -36,16 +36,38 @@ struct creature {
         char get_facing(){return facing;}
         char get_draw(){return draw;}
 };
+*/
 
-obj B; //Bomba
+struct obj {
+    int x;
+    int y;
+    bool exist = false;
+    bool hidden = false;
+    char draw = ' ';
+};
 
-obj F; //Chama
+struct creature {
+    int x;
+    int y;
+    bool alive = true;
+    char facing;
+    char draw = char(1);
+};
 
-creature P; //Player
+extern obj B; //Bomba
 
-creature E[5]; //Inimigo
+extern obj F; //Chama
 
-const int map_size = 15;
-int map[map_size][map_size];
+extern creature P; //Player
+
+extern creature E[5]; //Inimigo
+
+extern int map_size_x;
+extern int map_size_y;
+extern char** map;
+
+extern int timer;
+extern int timer2;
+extern int timer3;
 
 #endif

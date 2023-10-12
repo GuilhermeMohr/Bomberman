@@ -1,6 +1,4 @@
 #include "SaveLoad.hpp"
-#include "bomb_class.hpp"
-#include <iostream> //Cout, Cin, etc...
 
 using namespace std;
 
