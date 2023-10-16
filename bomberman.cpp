@@ -20,9 +20,13 @@ creature P; //Player
 
 creature E[5]; //Inimigo
 
+//Mapa
 int map_size_x;
 int map_size_y;
 char** map;
+const int maps_quantity = 2;
+const char* map_names[maps_quantity] = {"map_file.txt", "map2_file.txt"};
+int current_map;
 
 string GameState = "Open";
 
@@ -35,44 +39,12 @@ int timer3 = 0;
 int walls_destroyed = 0;
 int** walls_destroyed_array = new int*[walls_destroyed];
 
-
-///////////////////////////////////////////////\    /\//////////////////////////////////////////////
-//////////////////////////////////////////////  \  /  \/////////////////////////////////////////////
-/////////////////////////////////////////////    \/    \////////////////////////////////////////////
-int main()
-{
-    ///ALERTA: N�O MODIFICAR O TRECHO DE C�DIGO, A SEGUIR.
-        //INICIO: COMANDOS PARA QUE O CURSOR N�O FIQUE PISCANDO NA TELA
-    HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_CURSOR_INFO     cursorInfo;
-    GetConsoleCursorInfo(out, &cursorInfo);
-    cursorInfo.bVisible = false; // set the cursor visibility
-    SetConsoleCursorInfo(out, &cursorInfo);
-    //FIM: COMANDOS PARA QUE O CURSOR N�O FIQUE PISCANDO NA TELA
-    //IN�CIO: COMANDOS PARA REPOSICIONAR O CURSOR NO IN�CIO DA TELA
-    short int CX = 0, CY = 0;
-    COORD coord;
-    coord.X = CX;
-    coord.Y = CY;
-    //FIM: COMANDOS PARA REPOSICIONAR O CURSOR NO INICIO DA TELA
-    ///ALERTA: NAO MODIFICAR O TRECHO DE CODIGO, ACIMA.
-
-    //Randomizar a seed das funções rand().
-    srand(time(NULL));
-
-    //Prepara o código para pegar o tempo atual em segundos.
-    time_t seconds;
-
-    //Recebe a entrada e saída padrão.
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    
-
+void load_map(string map_file_name) {
     ifstream map_file;
-    map_file.open("map_file.txt");
+    map_file.open(map_file_name);
     string c;
     int temp_value = 0;
-    int y=0;
+    int y = 0;
 
     getline(map_file, c); //Pega o x e y do mapa.
     for (int i = 0; i < c.size(); i++) {
@@ -115,7 +87,7 @@ int main()
     }
     do {
         getline(map_file, c);
-        for (int i = 0; i < c.size()+1; i++) {
+        for (int i = 0; i < c.size() + 1; i++) {
             if (c[i] == '@') {
                 map[y][i] = char(219);
             }
@@ -130,25 +102,37 @@ int main()
     } while (!map_file.eof());
 
     map_file.close();
+}
 
-    ofstream debug;
-    debug.open("debug.txt");
+///////////////////////////////////////////////\    /\//////////////////////////////////////////////
+//////////////////////////////////////////////  \  /  \/////////////////////////////////////////////
+/////////////////////////////////////////////    \/    \////////////////////////////////////////////
+int main()
+{
+    ///ALERTA: N�O MODIFICAR O TRECHO DE C�DIGO, A SEGUIR.
+        //INICIO: COMANDOS PARA QUE O CURSOR N�O FIQUE PISCANDO NA TELA
+    HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO     cursorInfo;
+    GetConsoleCursorInfo(out, &cursorInfo);
+    cursorInfo.bVisible = false; // set the cursor visibility
+    SetConsoleCursorInfo(out, &cursorInfo);
+    //FIM: COMANDOS PARA QUE O CURSOR N�O FIQUE PISCANDO NA TELA
+    //IN�CIO: COMANDOS PARA REPOSICIONAR O CURSOR NO IN�CIO DA TELA
+    short int CX = 0, CY = 0;
+    COORD coord;
+    coord.X = CX;
+    coord.Y = CY;
+    //FIM: COMANDOS PARA REPOSICIONAR O CURSOR NO INICIO DA TELA
+    ///ALERTA: NAO MODIFICAR O TRECHO DE CODIGO, ACIMA.
 
-    for (int i = 0; i < map_size_y; i++) {
-        for (int ii = 0; ii < map_size_x; ii++) {
-            if (map[i][ii] == char(219)) {
-                debug << '@';
-            } else if (map[i][ii] == char(178)) {
-                debug << '#';
-            } else {
-                debug << ' ';
-            }
-            
-        }
-        debug << '\n';
-    }
+    //Randomizar a seed das funções rand().
+    srand(time(NULL));
 
-    debug.close();
+    //Prepara o código para pegar o tempo atual em segundos.
+    time_t seconds;
+
+    //Recebe a entrada e saída padrão.
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
     //Variavel para a tecla precionada.
     char keyboard;
@@ -184,7 +168,8 @@ int main()
                     system("cls");
                 }
             }
-        } else if (GameState == "menu"){
+        }
+        else if (GameState == "menu") {
             cout << "     __                   __                            _ __  \n";
             cout << "  /\\ \\ \\_____   _____     \\ \\  ___   __ _  ___         | '_ \\ \n";
             cout << " /  \\/ / _ \\ \\ / / _ \\     \\ \\/ _ \\ / _` |/ _ \\        | | | |\n";
@@ -201,54 +186,44 @@ int main()
 
             if (_kbhit()) {
                 keyboard = _getch();
-                if(keyboard == 'n'){
+                if (keyboard == 'n') {
                     F.x = 0; F.y = 0;
                     P.x = 5; P.y = 5;
                     P.facing = 'd';
                     P.draw = char(2);
 
-                    //Coloca inimigos no mapa.
-                    for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++)
-                    {
-                        switch (rand() % 4) {
-                        case 1:
-                            E[i].facing = 'a';
-                            break;
-                        case 2:
-                            E[i].facing = 's';
-                            break;
-                        case 3:
-                            E[i].facing = 'd';
-                            break;
-                        case 4:
-                            E[i].facing = 'w';
-                            break;
-                        default:
-                            E[i].facing = 'w';
-                        }
-
-                        do {
-                            E[i].x = rand() % (map_size_x - 1);
-                            E[i].y = rand() % (map_size_y - 1);
-                        } while (map[E[i].y][E[i].x] != ' ');
-
-                        map[E[i].y][E[i].x] = E[0].draw;
-                    };
-
-                    //Posição inicial do jogador.
-                    do {
-                        P.x = rand() % (map_size_x - 1);
-                        P.y = rand() % (map_size_y - 1);
-                    } while (map[P.y][P.x] != ' ');
-
-                    map[P.y][P.x] = char(2);
-
-                    GameState = "running";
                     system("cls");
-                } else if (keyboard == 's'){
+
+                    for (int i = 0; i < maps_quantity; i++) {
+                        load_map(map_names[i]);
+                        SetConsoleTextAttribute(hConsole, 8);
+                        cout << map_names[i] << " - " << i << '\n';
+                        for (int h = 0; h < map_size_y; h++) {
+                            for (int w = 0; w < map_size_x; w++) {
+                                switch (map[h][w]) {
+                                    case ' ': SetConsoleTextAttribute(hConsole, 0); cout << ' '; break; //caminho.
+                                    case char(219) : SetConsoleTextAttribute(hConsole, 8); cout << char(219); break; //parede.
+                                    case char(178) : SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede frágil.
+                                }
+                            }
+                            cout << "\n";
+                        } //fim for mapa.
+                        cout << "\n";
+
+                        for (int i = 0; i < map_size_x; i++) {
+                            delete map[i];
+                        }
+                        delete map;
+                    }
+
+                    GameState = "new";
+                }
+                else if (keyboard == 's') {
                     load_game();
                     GameState = "running";
                     system("cls");
+
+                    load_map(map_names[current_map]);
                     map[P.y][P.x] = P.draw;
                     for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++) {
                         if (E[i].alive) {
@@ -260,6 +235,55 @@ int main()
                     }
                     if (F.exist) {
                         map[F.y][F.x] = F.draw;
+                    }
+                }
+            }
+        } else if (GameState == "new") {
+            if (_kbhit()) {
+                keyboard = _getch();
+                for (int i = 0; i < maps_quantity; i++) {
+                    if (keyboard == '0' + i) {
+                        load_map(map_names[i]);
+                        current_map = i;
+
+                        //Coloca inimigos no mapa.
+                        for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++)
+                        {
+                            switch (rand() % 4) {
+                            case 1:
+                                E[i].facing = 'a';
+                                break;
+                            case 2:
+                                E[i].facing = 's';
+                                break;
+                            case 3:
+                                E[i].facing = 'd';
+                                break;
+                            case 4:
+                                E[i].facing = 'w';
+                                break;
+                            default:
+                                E[i].facing = 'w';
+                            }
+
+                            do {
+                                E[i].x = rand() % (map_size_x - 1);
+                                E[i].y = rand() % (map_size_y - 1);
+                            } while (map[E[i].y][E[i].x] != ' ');
+
+                            map[E[i].y][E[i].x] = E[0].draw;
+                        };
+
+                        //Posição inicial do jogador.
+                        do {
+                            P.x = rand() % (map_size_x - 1);
+                            P.y = rand() % (map_size_y - 1);
+                        } while (map[P.y][P.x] != ' ');
+
+                        map[P.y][P.x] = char(2);
+
+                        GameState = "running";
+                        system("cls");
                     }
                 }
             }
@@ -283,15 +307,17 @@ int main()
             ///Imprime o jogo: mapa e personagem.
             for (int h = 0; h < map_size_y; h++) {
                 for (int w = 0; w < map_size_x; w++) {
-                    switch (map[h][w]) {
-                    case ' ': SetConsoleTextAttribute(hConsole, 0); cout << ' '; break; //caminho.
-                    case char(219): SetConsoleTextAttribute(hConsole, 8); cout << char(219); break; //parede.
-                    case char(178): SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede frágil.
-                    case char(2): SetConsoleTextAttribute(hConsole, 15); cout << P.draw; break; //player.
-                    case char(208): SetConsoleTextAttribute(hConsole, 8);  cout << B.draw; break; //bomba.
-                    case '#': SetConsoleTextAttribute(hConsole, 12); cout << F.draw; break; //chama.
-                    case char(1): SetConsoleTextAttribute(hConsole, 12); cout << E[0].draw; break; //inimigos.
-                    //fim switch.
+                    if (P.x == w && P.y == h) { SetConsoleTextAttribute(hConsole, 15); cout << P.draw; }
+                    else {
+                        switch (map[h][w]) {
+                            case ' ': SetConsoleTextAttribute(hConsole, 0); cout << ' '; break; //caminho.
+                            case char(219) : SetConsoleTextAttribute(hConsole, 8); cout << char(219); break; //parede.
+                            case char(178) : SetConsoleTextAttribute(hConsole, 8);  cout << char(178); break; //parede frágil.
+                            case char(2) : SetConsoleTextAttribute(hConsole, 15); cout << P.draw; break; //player.
+                            case char(208) : SetConsoleTextAttribute(hConsole, 8);  cout << B.draw; break; //bomba.
+                            case '#': SetConsoleTextAttribute(hConsole, 12); cout << F.draw; break; //chama.
+                            case char(1) : SetConsoleTextAttribute(hConsole, 12); cout << E[0].draw; break; //inimigos.
+                        }
                     }
                 }
                 cout << "\n";

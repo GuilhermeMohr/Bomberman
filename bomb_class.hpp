@@ -65,6 +65,7 @@ extern creature E[5]; //Inimigo
 extern int map_size_x;
 extern int map_size_y;
 extern char** map;
+extern int current_map;
 
 extern int timer;
 extern int timer2;

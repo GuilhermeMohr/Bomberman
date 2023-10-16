@@ -12,7 +12,9 @@ void save(int timer = 0, int timer2 = 0, int timer3 = 0) {
     save_file << "B: x=" << B.x << ", y=" << B.y << ", exist=" << B.exist << ", hidden=" << B.hidden << ", \n";
     save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", \n";
     save_file << "TIMERS: a=" << timer << ", b=" << timer2 << ", c=" << timer3 << ", \n";
-    save_file << "WALLS: DESTROID=" << walls_destroyed << ", ";
+    save_file << "WALLS: DESTROID=" << walls_destroyed << ", \n";
+    save_file << "Map: map_name=" << current_map << ", ";
+
     int ii = 0;
     for (int i = 0; i < walls_destroyed; i++) {
         save_file << 'x' << char(97 + ii) << "=" << walls_destroyed_array[i][0] << ", ";
@@ -81,6 +83,9 @@ void load_game() {
             assign_value('a', &timer, load);
             assign_value('b', &timer2, load);
             assign_value('c', &timer3, load);
+            break;
+        case 'M':
+            assign_value('m', &current_map, load);
             break;
         case 'W':
             assign_value('D', &walls_destroyed, load);
