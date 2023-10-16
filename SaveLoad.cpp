@@ -13,15 +13,13 @@ void save(int timer = 0, int timer2 = 0, int timer3 = 0) {
     save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", \n";
     save_file << "TIMERS: a=" << timer << ", b=" << timer2 << ", c=" << timer3 << ", \n";
     save_file << "WALLS: DESTROID=" << walls_destroyed << ", \n";
-    save_file << "Map: map_name=" << current_map << ", ";
-
     int ii = 0;
     for (int i = 0; i < walls_destroyed; i++) {
         save_file << 'x' << char(97 + ii) << "=" << walls_destroyed_array[i][0] << ", ";
         save_file << 'y' << char(97 + ii + 1) << "=" << walls_destroyed_array[i][1] << ", ";
         ii += 2;
     }
-    save_file << "\n";
+    save_file << "Map: map_name=" << current_map << ", \n";
     save_file.close();
     cout << "Salvo\n";
 }
