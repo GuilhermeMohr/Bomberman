@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SAVE_LOAD
+#define SAVE_LOAD
 
 #include <iostream>
 #include <fstream>
@@ -7,12 +8,14 @@
 
 using namespace std;
 
-void save(int timer, int timer2, int timer3);
+void save();
 template <typename I>
 void assign_value(char value, I* receiver, string load);
 void load_game();
 void wall_break(int x, int y);
 
-//Número de parede destruída.
+//Nï¿½mero de parede destruï¿½da.
 extern int walls_destroyed;
 extern int** walls_destroyed_array;
+
+#endif

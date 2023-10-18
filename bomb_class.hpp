@@ -46,6 +46,34 @@ struct obj {
     char draw = ' ';
 };
 
+class Powerup {
+    private: 
+        int x;
+        int y;
+        bool exist;
+        bool active;
+        char draw;
+    public:
+        Powerup(int _x, int _y, bool _exist = true, bool _active = false, char _draw = char(42)){
+            x = _x;
+            y = _y;
+            exist = _exist;
+            active = _active;
+            draw = _draw;
+        }
+
+        void set_coord(int _x, int _y){x = _x; y = _y;}
+        void set_exist(bool _exist){exist = _exist;}
+        void set_active(bool _active){active = _active;}
+        void set_draw(char _draw){draw = _draw;}
+
+        int get_x(){return x;}
+        int get_y(){return x;}
+        bool get_exist(){return exist;}
+        bool get_active(){return active;}
+        char get_draw(){return draw;}
+};
+
 struct creature {
     int x;
     int y;
@@ -67,8 +95,9 @@ extern int map_size_y;
 extern char** map;
 extern int current_map;
 
-extern int timer;
-extern int timer2;
-extern int timer3;
+extern int timer_bomb;
+extern int timer_flame;
+extern int timer_enemy;
+extern int timer_game;
 
 #endif

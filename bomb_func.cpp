@@ -143,7 +143,7 @@ void kill_enemy(int x, int y) { //Mata um inimigo
     }
 }
 
-int explode_bomb(int x, int y) { //Explode a bomba, matando inimigos e o jogador
+int explode_bomb(int x, int y, int size = 1, int diagonal = 0) { //Explode a bomba, matando inimigos e o jogador
     kill_enemy(x, y); //Matar inimigo
 
     if (map[y][x] == char(2)) { //Matar jogador

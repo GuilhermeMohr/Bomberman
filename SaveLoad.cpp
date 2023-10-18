@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void save(int timer = 0, int timer2 = 0, int timer3 = 0) {
+void save() {
     ofstream save_file;
     save_file.open("save.txt");
     save_file << "P: x=" << P.x << ", y=" << P.y << ", facing=" << int(P.facing) << ", draw=" << int(P.draw) << ", \n";
@@ -11,7 +11,7 @@ void save(int timer = 0, int timer2 = 0, int timer3 = 0) {
     }
     save_file << "B: x=" << B.x << ", y=" << B.y << ", exist=" << B.exist << ", hidden=" << B.hidden << ", \n";
     save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", \n";
-    save_file << "TIMERS: a=" << timer << ", b=" << timer2 << ", c=" << timer3 << ", \n";
+    save_file << "TIMERS: a=" << timer_bomb << ", b=" << timer_flame << ", c=" << timer_enemy << ", d=" << timer_game << ", \n";
     save_file << "WALLS: DESTROID=" << walls_destroyed << ", \n";
     int ii = 0;
     for (int i = 0; i < walls_destroyed; i++) {
@@ -33,7 +33,7 @@ void assign_value(char value, I* receiver, string load) {
             }
             i--;
             int temp_value = 0;
-            for (int ii = 1; load[i] >= char(48) and load[i] <= char(57); ii *= 10) {//É um número (0, 9).
+            for (int ii = 1; load[i] >= char(48) and load[i] <= char(57); ii *= 10) {//ï¿½ um nï¿½mero (0, 9).
                 temp_value += (int(load[i]) - '0') * ii;
                 i--;
             }
@@ -78,9 +78,10 @@ void load_game() {
             assign_value('h', &F.hidden, load);
             break;
         case 'T':
-            assign_value('a', &timer, load);
-            assign_value('b', &timer2, load);
-            assign_value('c', &timer3, load);
+            assign_value('a', &timer_bomb, load);
+            assign_value('b', &timer_flame, load);
+            assign_value('c', &timer_enemy, load);
+            assign_value('d', &timer_game, load);
             break;
         case 'M':
             assign_value('m', &current_map, load);
