@@ -20,6 +20,9 @@ creature P; //Player
 
 creature E[5]; //Inimigo
 
+int powerups_quantity = 0;
+Powerup** powerup = new Powerup*[powerups_quantity]; //Powerups
+
 //Mapa
 int map_size_x;
 int map_size_y;
@@ -39,6 +42,8 @@ int timer_game = 0;
 //Número de parede destruída.
 int walls_destroyed = 0;
 int** walls_destroyed_array = new int*[walls_destroyed];
+
+//g++.exe c:\users\8132291\downloads\bomberman-main\*.cpp c:\users\8132291\downloads\bomberman-main\*.hpp -o c:\users\8132291\downloads\bomberman-main\bomberman.exe
 
 void load_map(const char* map_file_name) {
     ifstream map_file;
@@ -141,7 +146,7 @@ int main()
     B.draw = char(208);
     F.draw = '#';
 
-    while (P.alive) {
+    while (true) {
         ///Posiciona a escrita no início do console.
         SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 
@@ -187,9 +192,7 @@ int main()
 
             if (_kbhit()) {
                 keyboard = _getch();
-                if (keyboard == 'n') {
-                    timer_game = time(NULL);
-
+                if (keyboard == 'n') { //Novo Jogo.
                     F.x = 0; F.y = 0;
                     P.x = 5; P.y = 5;
                     P.facing = 'd';
@@ -221,7 +224,7 @@ int main()
 
                     GameState = "new";
                 }
-                else if (keyboard == 's') {
+                else if (keyboard == 's') { //Jogo Salvo.
                     load_game();
                     GameState = "running";
                     system("cls");
@@ -248,6 +251,8 @@ int main()
                     if (keyboard == '0' + i) {
                         load_map(map_names[i]);
                         current_map = i;
+
+                        timer_game = time(NULL);
 
                         //Coloca inimigos no mapa.
                         for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++)
@@ -299,7 +304,9 @@ int main()
                 if(keyboard == 27){
                     return 0;
                 } else if (keyboard == 's'){
+                    timer_game = time(NULL) - timer_game;
                     save();
+                    timer_game = time(NULL) - timer_game;
                 } else if (keyboard == 32){
                     timer_bomb = time(NULL) - timer_bomb;
                     timer_flame = time(NULL) - timer_flame;
@@ -312,7 +319,7 @@ int main()
 
         } else if (GameState == "running"){
             SetConsoleTextAttribute(hConsole, 8);
-            cout << time(NULL) - timer_game;
+            cout << time(NULL) - timer_game << "\n";
             ///Imprime o jogo: mapa e personagem.
             for (int h = 0; h < map_size_y; h++) {
                 for (int w = 0; w < map_size_x; w++) {
@@ -326,11 +333,16 @@ int main()
                             case char(208) : SetConsoleTextAttribute(hConsole, 8);  cout << B.draw; break; //bomba.
                             case '#': SetConsoleTextAttribute(hConsole, 12); cout << F.draw; break; //chama.
                             case char(1) : SetConsoleTextAttribute(hConsole, 12); cout << E[0].draw; break; //inimigos.
+                            case char(111) : SetConsoleTextAttribute(hConsole, 11); cout <<char(111); break;
                         }
                     }
                 }
                 cout << "\n";
             } //fim for mapa.
+
+            if (P.alive != true){
+                GameState = "gameover";
+            }
 
             //Mostra a bomba se escondida.
             if(!B.exist){
@@ -353,7 +365,7 @@ int main()
                     }
                 }
                 if(!alive){
-                    GameState == "gameover";
+                    GameState = "gameover";
                 }
             }
 
@@ -403,6 +415,7 @@ int main()
                     timer_bomb = time(NULL) - timer_bomb;
                     timer_flame = time(NULL) - timer_flame;
                     timer_enemy = time(NULL) - timer_enemy;
+                    timer_game = time(NULL) - timer_game;
                     GameState = "paused";
                     system("cls");
                 }
@@ -420,24 +433,33 @@ int main()
             }
             delete map;
 
-
-            if(P.alive){
-                SetConsoleTextAttribute(hConsole, 10);
-                cout << "_____.___.               __      __                    \n";
-                cout << "\\__  |   | ____  __ __  /  \\    /  \\____   ____     \n";
-                cout << " /   |   |/  _ \\|  |  \\ \\   \\/\\/   /  _ \\ /    \\    \n";
-                cout << " \\____   (  <_> )  |  /  \\        (  <_> )   |  \\ \n";
-                cout << " / ______|\\____/|____/    \\__/\\  / \\____/|___|  /  \n";
-                cout << " \\/                            \\/             \\/    \n";
-            }else{
-                SetConsoleTextAttribute(hConsole, 12);
-                cout << "  ________                        ________                         \n";
-                cout << " / _____ / _____    _____   ____   \\_____  \\___   __ ___________ \n";
-                cout << "/   \\  ___\\__   \\  /     \\_/ __ \\   /   |   \\  \\ / // __ \\_  __ \\     \n";
-                cout << "\\    \\_\\  \\/ __  \\|  Y Y  \\  ___/  /    |    \\    /\\  ___/|  | \\/\n";
-                cout << " \\______  (____  / __|_|  /\\__  >    \\______  / \\_ /  \\___  >__|    \n";
-                cout << "        \\/     \\/       \\/    \\/          \\/           \\/        \n";
+            for(int i = 0; i < powerups_quantity; i++){
+                delete powerups[i];
             }
+            delete []powerups;
+
+                if(P.alive){
+                    SetConsoleTextAttribute(hConsole, 10);
+                    cout << "_____.___.               __      __                    \n";
+                    cout << "\\__  |   | ____  __ __  /  \\    /  \\____   ____     \n";
+                    cout << " /   |   |/  _ \\|  |  \\ \\   \\/\\/   /  _ \\ /    \\    \n";
+                    cout << " \\____   (  <_> )  |  /  \\        (  <_> )   |  \\ \n";
+                    cout << " / ______|\\____/|____/    \\__/\\  / \\____/|___|  /  \n";
+                    cout << " \\/                            \\/             \\/    \n";
+                }else{
+                    SetConsoleTextAttribute(hConsole, 12);
+                    cout << "  ________                        ________                         \n";
+                    cout << " / _____ / _____    _____   ____   \\_____  \\___   __ ___________ \n";
+                    cout << "/   \\  ___\\__   \\  /     \\_/ __ \\   /   |   \\  \\ / // __ \\_  __ \\     \n";
+                    cout << "\\    \\_\\  \\/ __  \\|  Y Y  \\  ___/  /    |    \\    /\\  ___/|  | \\/\n";
+                    cout << " \\______  (____  / __|_|  /\\__  >  \\______  / \\_ /  \\___  >__|    \n";
+                    cout << "        \\/     \\/       \\/    \\/          \\/           \\/        \n";
+                }
+            do{
+                if (_kbhit()){
+                    return 0;
+                }
+            }while(true);
         }
     } //fim do laço do jogo.
     return 0;

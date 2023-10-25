@@ -1,4 +1,5 @@
 #include <time.h>
+#include "bomb_class.hpp"
 #include "bomb_func.hpp"
 
 /*char check_map(char direction, creature& caracter) { //Move os carinhas pelo mapa.
@@ -135,10 +136,33 @@ int check_map_bomb(char facing, int  x, int  y) {
     }
 }
 
+void create_powerup(){
+    for(int i = 0; i < powerups_quantity; i++){
+        delete powerups[i];
+    }
+    delete []powerups;
+
+    powerups_quantity++;
+    powerups = new Powerup*[powerups_quantity];
+    for (int i = 0; i < powerups_quantity; i++) {
+        powerups[i] = new Powerup;
+        *powerups[i] = Powerup{};
+    }
+
+    for (int i = 0; i < powerups_quantity; i++){
+        (*powerups[i]).create(rand() % (map_size_x - 1), rand() % (map_size_y - 1));
+        while (map[(*powerups[i]).get_y()][(*powerups[i]).get_x()] != ' '){
+            (*powerups[i]).create(rand() % (map_size_x - 1), rand() % (map_size_y - 1));
+        }
+        map[(*powerups[i]).get_y()][(*powerups[i]).get_x()] = (*powerups[i]).get_draw();
+    }
+}
+
 void kill_enemy(int x, int y) { //Mata um inimigo
     for (int i = 0; i < 5; i++) {
         if (E[i].x == x && E[i].y == y) {
             E[i].alive = false;
+            create_powerup();
         }
     }
 }

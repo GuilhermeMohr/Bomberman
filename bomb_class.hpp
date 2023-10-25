@@ -54,7 +54,7 @@ class Powerup {
         bool active;
         char draw;
     public:
-        Powerup(int _x, int _y, bool _exist = true, bool _active = false, char _draw = char(42)){
+        void create(int _x, int _y, char _draw = char(111), bool _exist = true, bool _active = false){
             x = _x;
             y = _y;
             exist = _exist;
@@ -89,6 +89,9 @@ extern obj F; //Chama
 extern creature P; //Player
 
 extern creature E[5]; //Inimigo
+
+extern int powerups_quantity;
+extern Powerup** powerups;
 
 extern int map_size_x;
 extern int map_size_y;

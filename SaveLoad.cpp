@@ -12,14 +12,14 @@ void save() {
     save_file << "B: x=" << B.x << ", y=" << B.y << ", exist=" << B.exist << ", hidden=" << B.hidden << ", \n";
     save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", \n";
     save_file << "TIMERS: a=" << timer_bomb << ", b=" << timer_flame << ", c=" << timer_enemy << ", d=" << timer_game << ", \n";
-    save_file << "WALLS: DESTROID=" << walls_destroyed << ", \n";
+    save_file << "WALLS: DESTROID=" << walls_destroyed << ", ";
     int ii = 0;
     for (int i = 0; i < walls_destroyed; i++) {
         save_file << 'x' << char(97 + ii) << "=" << walls_destroyed_array[i][0] << ", ";
         save_file << 'y' << char(97 + ii + 1) << "=" << walls_destroyed_array[i][1] << ", ";
         ii += 2;
     }
-    save_file << "Map: map_name=" << current_map << ", \n";
+    save_file << ", \n" << "Map: map_name=" << current_map << ", \n";
     save_file.close();
     cout << "Salvo\n";
 }
