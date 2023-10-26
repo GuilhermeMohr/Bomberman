@@ -145,7 +145,9 @@ int check_map_bomb(char facing, int  x, int  y) {
 }
 
 void pick_powerup(int y, int x){
-    if(y == bomb3x3.y && x == bombRand.x){
+    if(y == bomb3x3.get_y()) {
+        
+    } else if (x == bombRand.get_x()){
         
     }
 }

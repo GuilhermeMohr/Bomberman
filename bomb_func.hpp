@@ -11,5 +11,6 @@ int check_map_bomb(char facing, int  x, int  y);
 void kill_enemy(int x, int y);
 int explode_bomb(int x, int y, int size, int diagonal);
 int enemy_move(int i);
+void pick_powerup(int y, int x);
 
 #endif
