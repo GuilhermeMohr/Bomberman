@@ -90,8 +90,8 @@ extern creature P; //Player
 
 extern creature E[5]; //Inimigo
 
-extern int powerups_quantity;
-extern Powerup** powerups;
+extern Powerup bomb3x3;
+extern Powerup bombRand;
 
 extern int map_size_x;
 extern int map_size_y;

@@ -61,6 +61,8 @@ char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
             B.hidden = true; //Esconde a bomba
             y = y - 1;
             return 'w';
+        } else {
+            pick_powerup(y - 1, x);
         }
         break;
     case 80: case 's': ///baixo
@@ -72,6 +74,8 @@ char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
             B.hidden = true;
             y = y + 1;
             return 's';
+        } else {
+            pick_powerup(y + 1, x);
         }
         break;
     case 75: case 'a': ///esquerda
@@ -83,6 +87,8 @@ char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
             B.hidden = true;
             x = x - 1;
             return 'a';
+        } else {
+            pick_powerup(y, x - 1);
         }
         break;
     case 77: case 'd': ///direita
@@ -94,6 +100,8 @@ char check_map(char direction, int& x, int& y) { //Move os carinhas pelo mapa.
             B.hidden = true;
             x = x + 1;
             return 'd';
+        } else {
+            pick_powerup(y, x + 1);
         }
         break;
     }
@@ -136,25 +144,27 @@ int check_map_bomb(char facing, int  x, int  y) {
     }
 }
 
+void pick_powerup(int y, int x){
+    if(y == bomb3x3.y && x == bombRand.x){
+        
+    }
+}
+
 void create_powerup(){
-    for(int i = 0; i < powerups_quantity; i++){
-        delete powerups[i];
-    }
-    delete []powerups;
-
-    powerups_quantity++;
-    powerups = new Powerup*[powerups_quantity];
-    for (int i = 0; i < powerups_quantity; i++) {
-        powerups[i] = new Powerup;
-        *powerups[i] = Powerup{};
-    }
-
-    for (int i = 0; i < powerups_quantity; i++){
-        (*powerups[i]).create(rand() % (map_size_x - 1), rand() % (map_size_y - 1));
-        while (map[(*powerups[i]).get_y()][(*powerups[i]).get_x()] != ' '){
-            (*powerups[i]).create(rand() % (map_size_x - 1), rand() % (map_size_y - 1));
+    if(rand() % 2 == 1){
+        if(bomb3x3.get_exist() == false){
+            bomb3x3.create(rand() % (map_size_x - 1), rand() % (map_size_y - 1));
+            while(map[bomb3x3.get_y()][bomb3x3.get_x()] != ' '){
+                bomb3x3.set_coord(rand() % (map_size_x - 1), rand() % (map_size_y - 1));
+            }
+            map[bomb3x3.get_y()][bomb3x3.get_x()] = bomb3x3.get_draw();
+        } else if (bombRand.get_exist() == false){
+            bombRand.create(rand() % (map_size_x - 1), rand() % (map_size_y - 1), 4);
+            while(map[bombRand.get_y()][bombRand.get_x()] != ' '){
+                bombRand.set_coord(rand() % (map_size_x - 1), rand() % (map_size_y - 1));
+            }
+            map[bombRand.get_y()][bombRand.get_x()] = bombRand.get_draw();
         }
-        map[(*powerups[i]).get_y()][(*powerups[i]).get_x()] = (*powerups[i]).get_draw();
     }
 }
 

@@ -20,6 +20,9 @@ creature P; //Player
 
 creature E[5]; //Inimigo
 
+Powerup bomb3x3;
+Powerup bombRand;
+
 int powerups_quantity = 0;
 Powerup** powerup = new Powerup*[powerups_quantity]; //Powerups
 
@@ -43,7 +46,7 @@ int timer_game = 0;
 int walls_destroyed = 0;
 int** walls_destroyed_array = new int*[walls_destroyed];
 
-//g++.exe c:\users\8132291\downloads\bomberman-main\*.cpp c:\users\8132291\downloads\bomberman-main\*.hpp -o c:\users\8132291\downloads\bomberman-main\bomberman.exe
+//g++.exe C:\Users\Usuario\Downloads\bomberman-main\*.cpp C:\Users\Usuario\Downloads\bomberman-main\*.hpp -o C:\Users\Usuario\Downloads\bomberman-main\bomberman.exe
 
 void load_map(const char* map_file_name) {
     ifstream map_file;
@@ -334,6 +337,7 @@ int main()
                             case '#': SetConsoleTextAttribute(hConsole, 12); cout << F.draw; break; //chama.
                             case char(1) : SetConsoleTextAttribute(hConsole, 12); cout << E[0].draw; break; //inimigos.
                             case char(111) : SetConsoleTextAttribute(hConsole, 11); cout <<char(111); break;
+                            case char(4) : SetConsoleTextAttribute(hConsole, 14); cout <<char(4); break;
                         }
                     }
                 }
@@ -432,11 +436,6 @@ int main()
                 delete map[i];
             }
             delete map;
-
-            for(int i = 0; i < powerups_quantity; i++){
-                delete powerups[i];
-            }
-            delete []powerups;
 
                 if(P.alive){
                     SetConsoleTextAttribute(hConsole, 10);
