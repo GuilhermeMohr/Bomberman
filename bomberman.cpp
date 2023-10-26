@@ -163,7 +163,7 @@ int main()
             cout << "| (  \\ \\ | |   | || |   | || (  \\ \\ | (      | (\\ (   | |   | || (   ) || | \\   | \n";
             cout << "| )___) )| (___) || )   ( || )___) )| (____/\\| ) \\ \\__| )   ( || )   ( || )  \\  | \n";
             cout << "|/ \\___/ (_______)|/     \\||/ \\___/ (_______/|/   \\__/|/     \\||/     \\||/    )_) \n";
-            cout << "\n\n";
+            cout << "\n\n\n Desenvolvido por Guilherme Mohr, Lucas Alexandre e Joao Victor Ferreira. ";
 
             cout << " /\\  _  _  __|_ _    _  _ _  _  _  _    _  _  _ _    . _  _  _  _| \n";
             cout << "/~~\\|_)(/_|  | (/_  (/__\\|_)(_|(_ (_)  |_)(_|| (_|   |(_)(_|(_|| . \n";
@@ -192,6 +192,8 @@ int main()
             cout << " /\\_/ / (_) | (_| | (_) | _\\ \\ (_| | |\\ V / (_) |       |___/    \n";
             cout << " \\___/ \\___/ \\__, |\\___/  \\__/\\__,_|_| \\_/ \\___/           \n";
             cout << "             |___/                                                 \n";
+            cout << "\n\n\n Desenvolvido por Guilherme Mohr, Lucas Alexandre e Joao Victor Ferreira. ";
+            cout << "\n\n !!! Pressione as setas do teclado, ou as teclas A, W, S, D, para movimentar o personagem, e espaco para soltar a bomba !!!";
 
             if (_kbhit()) {
                 keyboard = _getch();
