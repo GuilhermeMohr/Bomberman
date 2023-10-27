@@ -1,5 +1,14 @@
 #ifndef BOMB_CLASS
 #define BOMB_CLASS
+
+#include <iostream> //Cout, Cin, etc...
+#include <windows.h> //Biblioteca windows para o terminal.
+#include <conio.h> //Teclado.
+#include <time.h> //Usar o tempo.
+#include <cstdlib>
+#include <fstream>
+#include <string>
+
 /*
 struct obj {
     private:
@@ -46,15 +55,33 @@ struct obj {
     char draw = ' ';
 };
 
+struct creature {
+    int x;
+    int y;
+    bool alive = true;
+    char facing;
+    char draw = char(1);
+    char powerup = ' ';
+};
+
+extern obj B; //Bomba
+
+extern obj F; //Chama
+
+extern creature P; //Player
+
 class Powerup {
     private: 
         int x;
         int y;
         bool exist;
         bool active;
+        int size;
+        int diagonal;
         char draw;
+        int quantity;
     public:
-        void create(int _x, int _y, char _draw = char(111), bool _exist = true, bool _active = false){
+        void create(int _x, int _y, int size = 1, int diagonal = 0, char _draw = char(111), bool _exist = true, bool _active = false, int _quantity = 3){
             x = _x;
             y = _y;
             exist = _exist;
@@ -66,27 +93,19 @@ class Powerup {
         void set_exist(bool _exist){exist = _exist;}
         void set_active(bool _active){active = _active;}
         void set_draw(char _draw){draw = _draw;}
+        void set_size(int _size){size = _size;}
+        void set_diagonal(int _diagonal){diagonal = _diagonal;}
+        void set_quantity(int _quantity){quantity = _quantity;}
 
         int get_x(){return x;}
         int get_y(){return x;}
         bool get_exist(){return exist;}
         bool get_active(){return active;}
         char get_draw(){return draw;}
+        int get_size(){return size;}
+        int get_diagonal(){return diagonal;}
+        int get_quantity(){return quantity;}
 };
-
-struct creature {
-    int x;
-    int y;
-    bool alive = true;
-    char facing;
-    char draw = char(1);
-};
-
-extern obj B; //Bomba
-
-extern obj F; //Chama
-
-extern creature P; //Player
 
 extern creature E[5]; //Inimigo
 

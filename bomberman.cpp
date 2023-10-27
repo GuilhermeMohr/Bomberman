@@ -163,11 +163,12 @@ int main()
             cout << "| (  \\ \\ | |   | || |   | || (  \\ \\ | (      | (\\ (   | |   | || (   ) || | \\   | \n";
             cout << "| )___) )| (___) || )   ( || )___) )| (____/\\| ) \\ \\__| )   ( || )   ( || )  \\  | \n";
             cout << "|/ \\___/ (_______)|/     \\||/ \\___/ (_______/|/   \\__/|/     \\||/     \\||/    )_) \n";
-            cout << "\n\n\n Desenvolvido por Guilherme Mohr, Lucas Alexandre e Joao Victor Ferreira. ";
 
             cout << " /\\  _  _  __|_ _    _  _ _  _  _  _    _  _  _ _    . _  _  _  _| \n";
             cout << "/~~\\|_)(/_|  | (/_  (/__\\|_)(_|(_ (_)  |_)(_|| (_|   |(_)(_|(_|| . \n";
             cout << "    |                    |             |            L|    _|       \n";
+
+            cout << "\n\n\n Desenvolvido por Guilherme Mohr, Lucas Alexandre e Joao Victor Ferreira. ";
 
 
             if (_kbhit()) {
@@ -192,7 +193,7 @@ int main()
             cout << " /\\_/ / (_) | (_| | (_) | _\\ \\ (_| | |\\ V / (_) |       |___/    \n";
             cout << " \\___/ \\___/ \\__, |\\___/  \\__/\\__,_|_| \\_/ \\___/           \n";
             cout << "             |___/                                                 \n";
-            cout << "\n\n\n Desenvolvido por Guilherme Mohr, Lucas Alexandre e Joao Victor Ferreira. ";
+            cout << "\n\n\n Desenvolvido por Guilherme Mohr, Lucas Alexandre e Joao Victor Ferreira.";
             cout << "\n\n !!! Pressione as setas do teclado, ou as teclas A, W, S, D, para movimentar o personagem, e espaco para soltar a bomba !!!";
 
             if (_kbhit()) {
@@ -377,28 +378,44 @@ int main()
 
             //Explode a bomba se existir.
             if (time(NULL) - timer_bomb >= 3 && B.exist) {
-                timer_flame = explode_bomb(B.x, B.y, 1, 0);
+                switch(P.powerup){
+                    case 'B':
+                        timer_flame = explode_bomb(B.x, B.y, bomb3x3.get_size());
+                        bomb3x3.set_quantity(bomb3x3.get_quantity()-1);
+                        if(bomb3x3.get_quantity() == 0){
+                            bomb3x3.set_active(false);
+                            P.powerup = ' ';
+                        }
+                    break;
+
+                    case 'R':
+                        timer_flame = explode_bomb(B.x, B.y, bombRand.get_size());
+                        bombRand.set_quantity(bombRand.get_quantity()-1);
+                        if(bomb3x3.get_quantity() == 0){
+                            bomb3x3.set_active(false);
+                            P.powerup = ' ';
+                        }
+                    break;
+
+                    default:
+                        timer_flame = explode_bomb(B.x, B.y);
+                }
                 P.draw = char(2);
             }
+                
 
             //Se existir chamas deixadas pela bomba as extingue depois de um tempo.
-            if (time(NULL) - timer_flame >= 0.5 && F.exist) {
-                if (map[F.y - 1][F.x] == F.draw) {
-                    map[F.y - 1][F.x] = ' ';
-                }
-                if (map[F.y + 1][F.x] == F.draw) {
-                    map[F.y + 1][F.x] = ' ';
-                }
-                if (map[F.y][F.x - 1] == F.draw) {
-                    map[F.y][F.x - 1] = ' ';
-                }
-                if (map[F.y][F.x + 1] == F.draw) {
-                    map[F.y][F.x + 1] = ' ';
-                }
-                if (time(NULL) - timer_flame >= 1) {
-                    map[F.y][F.x] = ' ';
-                    F.exist = false;
-                }
+            switch(P.powerup){
+                    case 'B':
+                        extingue_fire(bomb3x3.get_size());
+                    break;
+
+                    case 'R':
+                        extingue_fire(bombRand.get_size());
+                    break;
+
+                    default:
+                        extingue_fire();
             }
 
             ///executa os movimentos.
