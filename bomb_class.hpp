@@ -81,12 +81,13 @@ class Powerup {
         char draw;
         int quantity;
     public:
-        void create(int _x, int _y, int size = 1, int diagonal = 0, char _draw = char(111), bool _exist = true, bool _active = false, int _quantity = 3){
+        void create(int _x, int _y, int _size = 1, int _diagonal = 0, char _draw = char(111), bool _exist = true){
             x = _x;
             y = _y;
             exist = _exist;
-            active = _active;
             draw = _draw;
+            size = _size;
+            diagonal = _diagonal;
         }
 
         void set_coord(int _x, int _y){x = _x; y = _y;}
@@ -121,5 +122,7 @@ extern int timer_bomb;
 extern int timer_flame;
 extern int timer_enemy;
 extern int timer_game;
+
+extern int kill_count;
 
 #endif

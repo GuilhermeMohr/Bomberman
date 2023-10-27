@@ -20,6 +20,7 @@ creature P; //Player
 
 creature E[5]; //Inimigo
 
+//Powerups
 Powerup bomb3x3;
 Powerup bombRand;
 
@@ -41,6 +42,8 @@ int timer_bomb = 0;
 int timer_flame = 0;
 int timer_enemy = 0;
 int timer_game = 0;
+
+int kill_count = 0;
 
 //Número de parede destruída.
 int walls_destroyed = 0;
@@ -167,8 +170,11 @@ int main()
             cout << " /\\  _  _  __|_ _    _  _ _  _  _  _    _  _  _ _    . _  _  _  _| \n";
             cout << "/~~\\|_)(/_|  | (/_  (/__\\|_)(_|(_ (_)  |_)(_|| (_|   |(_)(_|(_|| . \n";
             cout << "    |                    |             |            L|    _|       \n";
+            cout << "\n\n";
 
-            cout << "\n\n\n Desenvolvido por Guilherme Mohr, Lucas Alexandre e Joao Victor Ferreira. ";
+            cout << " +-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+ +-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+ +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+ +-+ +-+-+-+-+ +-+-+-+-+-+-+ \n";
+            cout << " |D|e|s|e|n|v|o|l|v|i|d|o| |p|o|r| |G|u|i|l|h|e|r|m|e| |M|o|h|r|,| |L|u|c|a|s| |A|l|e|x|a|n|d|r|e| |e| |J|o|a|o| |V|i|c|t|o|r| \n";
+            cout << " +-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+ +-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+ +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+ +-+ +-+-+-+-+ +-+-+-+-+-+-+ \n";
 
 
             if (_kbhit()) {
@@ -193,7 +199,7 @@ int main()
             cout << " /\\_/ / (_) | (_| | (_) | _\\ \\ (_| | |\\ V / (_) |       |___/    \n";
             cout << " \\___/ \\___/ \\__, |\\___/  \\__/\\__,_|_| \\_/ \\___/           \n";
             cout << "             |___/                                                 \n";
-            cout << "\n\n\n Desenvolvido por Guilherme Mohr, Lucas Alexandre e Joao Victor Ferreira.";
+
             cout << "\n\n !!! Pressione as setas do teclado, ou as teclas A, W, S, D, para movimentar o personagem, e espaco para soltar a bomba !!!";
 
             if (_kbhit()) {
@@ -247,6 +253,12 @@ int main()
                     }
                     if (F.exist) {
                         map[F.y][F.x] = F.draw;
+                    }
+                    if (bomb3x3.get_exist()) {
+                        map[bomb3x3.get_y()][bomb3x3.get_x()] = bomb3x3.get_draw();
+                    }
+                    if (bombRand.get_exist()) {
+                        map[bombRand.get_y()][bombRand.get_x()] = bombRand.get_draw();
                     }
                 }
             }
@@ -324,8 +336,20 @@ int main()
             }
 
         } else if (GameState == "running"){
-            SetConsoleTextAttribute(hConsole, 8);
-            cout << time(NULL) - timer_game << "\n";
+            SetConsoleTextAttribute(hConsole, 12);
+            cout << "......................\n";
+            SetConsoleTextAttribute(hConsole, 15);
+            cout << "| Tempo de jogo: " << time(NULL) - timer_game << "                       \n";
+            SetConsoleTextAttribute(hConsole, 12);
+            cout << "| Inimigos mortos: " << kill_count << "                     \n";
+            SetConsoleTextAttribute(hConsole, 11);
+            cout << "| Bombas especiais: ";
+            switch (P.powerup) {
+                case 'B': cout << bomb3x3.get_quantity() << "                    \n"; break;
+                case 'R': cout << bombRand.get_quantity() << "                    \n"; break;
+                default: cout << " " << "                    \n";
+            }
+            cout << "|.....................\n";
             ///Imprime o jogo: mapa e personagem.
             for (int h = 0; h < map_size_y; h++) {
                 for (int w = 0; w < map_size_x; w++) {
@@ -339,8 +363,8 @@ int main()
                             case char(208) : SetConsoleTextAttribute(hConsole, 8);  cout << B.draw; break; //bomba.
                             case '#': SetConsoleTextAttribute(hConsole, 12); cout << F.draw; break; //chama.
                             case char(1) : SetConsoleTextAttribute(hConsole, 12); cout << E[0].draw; break; //inimigos.
-                            case char(111) : SetConsoleTextAttribute(hConsole, 11); cout <<char(111); break;
-                            case char(4) : SetConsoleTextAttribute(hConsole, 14); cout <<char(4); break;
+                            case char(111) : SetConsoleTextAttribute(hConsole, 11); cout << bomb3x3.get_draw(); break;
+                            case char(4) : SetConsoleTextAttribute(hConsole, 14); cout << bombRand.get_draw(); break;
                         }
                     }
                 }
@@ -380,21 +404,11 @@ int main()
             if (time(NULL) - timer_bomb >= 3 && B.exist) {
                 switch(P.powerup){
                     case 'B':
-                        timer_flame = explode_bomb(B.x, B.y, bomb3x3.get_size());
-                        bomb3x3.set_quantity(bomb3x3.get_quantity()-1);
-                        if(bomb3x3.get_quantity() == 0){
-                            bomb3x3.set_active(false);
-                            P.powerup = ' ';
-                        }
+                        timer_flame = explode_bomb(B.x, B.y, bomb3x3.get_size(), bomb3x3.get_diagonal(), true);
                     break;
 
                     case 'R':
-                        timer_flame = explode_bomb(B.x, B.y, bombRand.get_size());
-                        bombRand.set_quantity(bombRand.get_quantity()-1);
-                        if(bomb3x3.get_quantity() == 0){
-                            bomb3x3.set_active(false);
-                            P.powerup = ' ';
-                        }
+                        timer_flame = explode_bomb(B.x, B.y, bombRand.get_size(), bombRand.get_diagonal());
                     break;
 
                     default:
@@ -407,11 +421,23 @@ int main()
             //Se existir chamas deixadas pela bomba as extingue depois de um tempo.
             switch(P.powerup){
                     case 'B':
-                        extingue_fire(bomb3x3.get_size());
+                        if (extingue_fire(bomb3x3.get_size())) {
+                            bomb3x3.set_quantity(bomb3x3.get_quantity() - 1);
+                            if (bomb3x3.get_quantity() <= 0) {
+                                bomb3x3.set_active(false);
+                                P.powerup = ' ';
+                            }
+                        }
                     break;
 
                     case 'R':
-                        extingue_fire(bombRand.get_size());
+                        if (extingue_fire(bombRand.get_size())) {
+                            bombRand.set_quantity(bombRand.get_quantity() - 1);
+                            if (bombRand.get_quantity() <= 0) {
+                                bombRand.set_active(false);
+                                P.powerup = ' ';
+                            }
+                        }
                     break;
 
                     default:
@@ -456,23 +482,24 @@ int main()
             }
             delete map;
 
-                if(P.alive){
-                    SetConsoleTextAttribute(hConsole, 10);
-                    cout << "_____.___.               __      __                    \n";
-                    cout << "\\__  |   | ____  __ __  /  \\    /  \\____   ____     \n";
-                    cout << " /   |   |/  _ \\|  |  \\ \\   \\/\\/   /  _ \\ /    \\    \n";
-                    cout << " \\____   (  <_> )  |  /  \\        (  <_> )   |  \\ \n";
-                    cout << " / ______|\\____/|____/    \\__/\\  / \\____/|___|  /  \n";
-                    cout << " \\/                            \\/             \\/    \n";
-                }else{
-                    SetConsoleTextAttribute(hConsole, 12);
-                    cout << "  ________                        ________                         \n";
-                    cout << " / _____ / _____    _____   ____   \\_____  \\___   __ ___________ \n";
-                    cout << "/   \\  ___\\__   \\  /     \\_/ __ \\   /   |   \\  \\ / // __ \\_  __ \\     \n";
-                    cout << "\\    \\_\\  \\/ __  \\|  Y Y  \\  ___/  /    |    \\    /\\  ___/|  | \\/\n";
-                    cout << " \\______  (____  / __|_|  /\\__  >  \\______  / \\_ /  \\___  >__|    \n";
-                    cout << "        \\/     \\/       \\/    \\/          \\/           \\/        \n";
-                }
+            if(P.alive){
+                SetConsoleTextAttribute(hConsole, 10);
+                cout << "_____.___.               __      __                    \n";
+                cout << "\\__  |   | ____  __ __  /  \\    /  \\____   ____     \n";
+                cout << " /   |   |/  _ \\|  |  \\ \\   \\/\\/   /  _ \\ /    \\    \n";
+                cout << " \\____   (  <_> )  |  /  \\        (  <_> )   |  \\ \n";
+                cout << " / ______|\\____/|____/    \\__/\\  / \\____/|___|  /  \n";
+                cout << " \\/                            \\/             \\/    \n";
+            }else{
+                SetConsoleTextAttribute(hConsole, 12);
+                cout << "  ________                        ________                         \n";
+                cout << " / _____ / _____    _____   ____   \\_____  \\___   __ ___________ \n";
+                cout << "/   \\  ___\\__   \\  /     \\_/ __ \\   /   |   \\  \\ / // __ \\_  __ \\     \n";
+                cout << "\\    \\_\\  \\/ __  \\|  Y Y  \\  ___/  /    |    \\    /\\  ___/|  | \\/\n";
+                cout << " \\______  (____  / __|_|  /\\__  >  \\______  / \\_ /  \\___  >__|    \n";
+                cout << "        \\/     \\/       \\/    \\/          \\/           \\/        \n";
+            }
+
             do{
                 if (_kbhit()){
                     return 0;

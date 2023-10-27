@@ -169,12 +169,14 @@ bool pick_powerup(int y, int x){
         P.powerup = 'B';
         bomb3x3.set_active(true);
         bomb3x3.set_exist(false);
+        bomb3x3.set_quantity(3);
         bomb3x3.set_coord(0, 0);
         return true;
     } else if (P.y == bombRand.get_y() && P.x == bombRand.get_x()){
         P.powerup = 'R';
         bombRand.set_active(true);
         bombRand.set_exist(false);
+        bombRand.set_quantity(2);
         bombRand.set_coord(0, 0);
         return true;
     }
@@ -196,7 +198,6 @@ void create_powerup(){
     if(rand() % 2 == 1){
         if(bomb3x3.get_exist() == false){
             bomb3x3.create(rand() % (map_size_x - 1), rand() % (map_size_y - 1), 3);
-            bomb3x3.set_size(3);
             while(map[bomb3x3.get_y()][bomb3x3.get_x()] != ' '){
                 bomb3x3.set_coord(rand() % (map_size_x - 1), rand() % (map_size_y - 1));
             }
@@ -206,7 +207,6 @@ void create_powerup(){
     if(rand() % 2 == 1){
         if (bombRand.get_exist() == false){
             bombRand.create(rand() % (map_size_x - 1), rand() % (map_size_y - 1), (rand()%3)+2, 0, 4);
-            bombRand.set_size((rand()%3)+2);
             while(map[bombRand.get_y()][bombRand.get_x()] != ' '){
                 bombRand.set_coord(rand() % (map_size_x - 1), rand() % (map_size_y - 1));
             }
@@ -220,14 +220,16 @@ void kill_enemy(int x, int y) { //Mata um inimigo
     for (int i = 0; i < 5; i++) {
         if (E[i].x == x && E[i].y == y && E[i].alive != false) {
             E[i].alive = false;
+            kill_count++;
             create_powerup();
         }
     }
 }
 
-int explode_bomb(int x, int y, int size, int diagonal) { //Explode a bomba, matando inimigos e o jogador
+int explode_bomb(int x, int y, int size, int diagonal, bool pass_wall) { //Explode a bomba, matando inimigos e o jogador
+    bool w = true, s = true, a = true, d = true;
     for (int i=0; i < size+1; i++){
-        if (!(x-i < 0)){
+        if (!(x-i < 0) && w){
             if (map[y][x-i] != char(219)) {
                 kill_enemy(x-i, y);
 
@@ -239,10 +241,12 @@ int explode_bomb(int x, int y, int size, int diagonal) { //Explode a bomba, mata
                 }
 
                 map[y][x-i] = F.draw;
+            } else if (pass_wall == false) {
+                w = false;
             }
         }
 
-        if (!(x+i > map_size_x)){
+        if (!(x+i > map_size_x) && s){
             if (map[y][x+i] != char(219)) {
                 kill_enemy(x+i, y);
 
@@ -254,10 +258,12 @@ int explode_bomb(int x, int y, int size, int diagonal) { //Explode a bomba, mata
                 }
 
                 map[y][x+i] = F.draw;
+            } else if (pass_wall == false) {
+                s = false;
             }
         }
 
-        if (!(y-i < 0)){
+        if (!(y-i < 0) && a){
             if (map[y-i][x] != char(219)) {
                 kill_enemy(x, y-i);
 
@@ -269,10 +275,12 @@ int explode_bomb(int x, int y, int size, int diagonal) { //Explode a bomba, mata
                 }
 
                 map[y-i][x] = F.draw;
+            } else if (pass_wall == false) {
+                a = false;
             }
         }
 
-        if (!(y+i > map_size_y)){
+        if (!(y+i > map_size_y) && d){
             if (map[y+i][x] != char(219)) {
                 kill_enemy(x, y+1);
 
@@ -284,6 +292,8 @@ int explode_bomb(int x, int y, int size, int diagonal) { //Explode a bomba, mata
                 }
 
                 map[y+i][x] = F.draw;
+            } else if (pass_wall == false) {
+                d = false;
             }
         }
     }
@@ -295,7 +305,7 @@ int explode_bomb(int x, int y, int size, int diagonal) { //Explode a bomba, mata
     return time(NULL);
 }
 
-void extingue_fire(int size){
+bool extingue_fire(int size){
     if (time(NULL) - timer_flame >= 0.5 && F.exist) {
         if (time(NULL) - timer_flame >= 1) {
                 map[F.y][F.x] = ' ';
@@ -315,6 +325,10 @@ void extingue_fire(int size){
                 map[F.y][F.x+i] = ' ';
             }
         }
+        return true;
+    }
+    else {
+        return false;
     }
 }
 

@@ -11,6 +11,8 @@ void save() {
     }
     save_file << "B: x=" << B.x << ", y=" << B.y << ", exist=" << B.exist << ", hidden=" << B.hidden << ", \n";
     save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", \n";
+    save_file << "3x3: X=" << bomb3x3.get_x() << ", Y=" << bomb3x3.get_y() << ", Exist=" << bomb3x3.get_exist() << ", Active=" << bomb3x3.get_active() << ", Size=" << bomb3x3.get_size() << ", Diagonal=" << bomb3x3.get_diagonal() << ", draW=" << bomb3x3.get_draw() << ", Quantity=" << bomb3x3.get_quantity() << ", \n";
+    save_file << "Rand: X=" << bombRand.get_x() << ", Y=" << bombRand.get_y() << ", Exist=" << bombRand.get_exist() << ", Active=" << bombRand.get_active() << ", Size=" << bombRand.get_size() << ", Diagonal=" << bombRand.get_diagonal() << ", draW=" << bombRand.get_draw() << ", Quantity=" << bombRand.get_quantity() << ", \n";
     save_file << "TIMERS: a=" << timer_bomb << ", b=" << timer_flame << ", c=" << timer_enemy << ", d=" << timer_game << ", \n";
     save_file << "WALLS: DESTROID=" << walls_destroyed << ", ";
     int ii = 0;
@@ -38,6 +40,26 @@ void assign_value(char value, I* receiver, string load) {
                 i--;
             }
             *receiver = I(temp_value);
+            return;
+        }
+    }
+}
+
+template <typename II>
+void assign_value(char value, II receiver, string load) {
+    II* pointer = &receiver;
+    for (int i = 0; i < load.size(); i++) {
+        if (load[i] == value) {
+            while (load[i] != ',') {
+                i++;
+            }
+            i--;
+            int temp_value = 0;
+            for (int ii = 1; load[i] >= char(48) and load[i] <= char(57); ii *= 10) {//� um n�mero (0, 9).
+                temp_value += (int(load[i]) - '0') * ii;
+                i--;
+            }
+            *pointer = II(temp_value);
             return;
         }
     }
@@ -77,6 +99,24 @@ void load_game() {
             assign_value('e', &F.exist, load);
             assign_value('h', &F.hidden, load);
             break;
+        case '3':
+            assign_value('X', bomb3x3.get_x(), load);
+            assign_value('Y', bomb3x3.get_y(), load);
+            assign_value('E', bomb3x3.get_exist(), load);
+            assign_value('A', bomb3x3.get_active(), load);
+            assign_value('S', bomb3x3.get_size(), load);
+            assign_value('D', bomb3x3.get_diagonal(), load);
+            assign_value('W', bomb3x3.get_draw(), load);
+            assign_value('Q', bomb3x3.get_quantity(), load);
+        case 'R':
+            assign_value('X', bombRand.get_x(), load);
+            assign_value('Y', bombRand.get_y(), load);
+            assign_value('E', bombRand.get_exist(), load);
+            assign_value('A', bombRand.get_active(), load);
+            assign_value('S', bombRand.get_size(), load);
+            assign_value('D', bombRand.get_diagonal(), load);
+            assign_value('W', bombRand.get_draw(), load);
+            assign_value('Q', bombRand.get_quantity(), load);
         case 'T':
             assign_value('a', &timer_bomb, load);
             assign_value('b', &timer_flame, load);
