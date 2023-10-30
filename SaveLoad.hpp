@@ -12,9 +12,11 @@ void save();
 template <typename I>
 void assign_value(char value, I* receiver, string load);
 template <typename II>
-void assign_value(char value, II receiver, string load);
+II assign_value_class(char value, II receiver, string load);
+
 void load_game();
 void wall_break(int x, int y);
+void load_map(const char* map_file_name);
 
 //N�mero de parede destru�da.
 extern int walls_destroyed;

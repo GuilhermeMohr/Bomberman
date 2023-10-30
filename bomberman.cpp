@@ -51,71 +51,6 @@ int** walls_destroyed_array = new int*[walls_destroyed];
 
 //g++.exe C:\Users\Usuario\Downloads\bomberman-main\*.cpp C:\Users\Usuario\Downloads\bomberman-main\*.hpp -o C:\Users\Usuario\Downloads\bomberman-main\bomberman.exe
 
-void load_map(const char* map_file_name) {
-    ifstream map_file;
-    map_file.open(map_file_name);
-    string c;
-    int temp_value = 0;
-    int y = 0;
-
-    getline(map_file, c); //Pega o x e y do mapa.
-    for (int i = 0; i < c.size(); i++) {
-        if (c[i] == 'y') {
-            while (c[i] != ',') {
-                i++;
-            }
-            i--;
-
-            for (int ii = 1; c[i] >= char(48) && c[i] <= char(57); ii *= 10) {//É um número (0, 9).
-                temp_value += (int(c[i]) - '0') * ii;
-                i--;
-            }
-
-            map = new char* [temp_value];
-            map_size_y = temp_value;
-
-            temp_value = 0;
-
-            while (c[i] != 'x') {
-                i--;
-            }
-            while (c[i] != ',') {
-                i++;
-            }
-            i--;
-
-            for (int ii = 1; c[i] >= char(48) && c[i] <= char(57); ii *= 10) {//É um número (0, 9).
-                temp_value += (int(c[i]) - '0') * ii;
-                i--;
-            }
-
-            for (int i = 0; i < map_size_y; i++) {
-                map[i] = new char[temp_value];
-            }
-
-            map_size_x = temp_value;
-            break;
-        }
-    }
-    do {
-        getline(map_file, c);
-        for (int i = 0; i < c.size() + 1; i++) {
-            if (c[i] == '@') {
-                map[y][i] = char(219);
-            }
-            else if (c[i] == '#') {
-                map[y][i] = char(178);
-            }
-            else if (c[i] == ' ') {
-                map[y][i] = ' ';
-            }
-        }
-        y++;
-    } while (!map_file.eof());
-
-    map_file.close();
-}
-
 ///////////////////////////////////////////////\    /\//////////////////////////////////////////////
 //////////////////////////////////////////////  \  /  \/////////////////////////////////////////////
 /////////////////////////////////////////////    \/    \////////////////////////////////////////////
@@ -237,11 +172,22 @@ int main()
                     GameState = "new";
                 }
                 else if (keyboard == 's') { //Jogo Salvo.
+                    ifstream save_file;
+                    save_file.open("save.txt");
+                    string load;
+
+                    do {
+                        getline(save_file, load);
+                        if (load[0] == 'M') {
+                            assign_value('m', &current_map, load);
+                        }
+                    } while (!save_file.eof());
+
+                    load_map(map_names[current_map]);
                     load_game();
                     GameState = "running";
                     system("cls");
-
-                    load_map(map_names[current_map]);
+                    
                     map[P.y][P.x] = P.draw;
                     for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++) {
                         if (E[i].alive) {

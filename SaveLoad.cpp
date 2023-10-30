@@ -5,20 +5,22 @@ using namespace std;
 void save() {
     ofstream save_file;
     save_file.open("save.txt");
-    save_file << "P: x=" << P.x << ", y=" << P.y << ", facing=" << int(P.facing) << ", draw=" << int(P.draw) << ", \n";
+    save_file << "P: x=" << P.x << ", y=" << P.y << ", facing=" << int(P.facing) << ", draw=" << int(P.draw) << ", poWerup=" << int(P.powerup) << ", \n";
     for (int i = 0; i < sizeof(E) / sizeof(E[i]); i++) {
         save_file << "E: x=" << E[i].x << ", y=" << E[i].y << ", facing=" << int(E[i].facing) << ", draw=" << int(E[i].draw) << ", Alive=" << E[i].alive << ", \n";
     }
     save_file << "B: x=" << B.x << ", y=" << B.y << ", exist=" << B.exist << ", hidden=" << B.hidden << ", \n";
     save_file << "F: x=" << F.x << ", y=" << F.y << ", exist=" << F.exist << ", hidden=" << F.hidden << ", \n";
-    save_file << "3x3: X=" << bomb3x3.get_x() << ", Y=" << bomb3x3.get_y() << ", Exist=" << bomb3x3.get_exist() << ", Active=" << bomb3x3.get_active() << ", Size=" << bomb3x3.get_size() << ", Diagonal=" << bomb3x3.get_diagonal() << ", draW=" << bomb3x3.get_draw() << ", Quantity=" << bomb3x3.get_quantity() << ", \n";
-    save_file << "Rand: X=" << bombRand.get_x() << ", Y=" << bombRand.get_y() << ", Exist=" << bombRand.get_exist() << ", Active=" << bombRand.get_active() << ", Size=" << bombRand.get_size() << ", Diagonal=" << bombRand.get_diagonal() << ", draW=" << bombRand.get_draw() << ", Quantity=" << bombRand.get_quantity() << ", \n";
+    save_file << "3x3: X=" << bomb3x3.get_x() << ", Y=" << bomb3x3.get_y() << ", Exist=" << bomb3x3.get_exist() << ", Active=" << bomb3x3.get_active() << ", Size=" << bomb3x3.get_size() << ", Diagonal=" << bomb3x3.get_diagonal() << ", draW=" << int(bomb3x3.get_draw()) << ", Quantity=" << bomb3x3.get_quantity() << ", \n";
+    save_file << "Rand: X=" << bombRand.get_x() << ", Y=" << bombRand.get_y() << ", Exist=" << bombRand.get_exist() << ", Active=" << bombRand.get_active() << ", Size=" << bombRand.get_size() << ", Diagonal=" << bombRand.get_diagonal() << ", draW=" << int(bombRand.get_draw()) << ", Quantity=" << bombRand.get_quantity() << ", \n";
     save_file << "TIMERS: a=" << timer_bomb << ", b=" << timer_flame << ", c=" << timer_enemy << ", d=" << timer_game << ", \n";
-    save_file << "WALLS: DESTROID=" << walls_destroyed << ", ";
+    save_file << "Kill_Count: k=" << kill_count << ", \n";
+    save_file << "WALLS: DESTROID=" << walls_destroyed;
     int ii = 0;
     for (int i = 0; i < walls_destroyed; i++) {
+        save_file << ", ";
         save_file << 'x' << char(97 + ii) << "=" << walls_destroyed_array[i][0] << ", ";
-        save_file << 'y' << char(97 + ii + 1) << "=" << walls_destroyed_array[i][1] << ", ";
+        save_file << 'y' << char(97 + ii + 1) << "=" << walls_destroyed_array[i][1];
         ii += 2;
     }
     save_file << ", \n" << "Map: map_name=" << current_map << ", \n";
@@ -46,8 +48,7 @@ void assign_value(char value, I* receiver, string load) {
 }
 
 template <typename II>
-void assign_value(char value, II receiver, string load) {
-    II* pointer = &receiver;
+II assign_value_class(char value, II receiver, string load) {
     for (int i = 0; i < load.size(); i++) {
         if (load[i] == value) {
             while (load[i] != ',') {
@@ -55,12 +56,11 @@ void assign_value(char value, II receiver, string load) {
             }
             i--;
             int temp_value = 0;
-            for (int ii = 1; load[i] >= char(48) and load[i] <= char(57); ii *= 10) {//� um n�mero (0, 9).
+            for (int ii = 1; load[i] >= char(48) and load[i] <= char(57); ii *= 10) {//Um numero (0, 9).
                 temp_value += (int(load[i]) - '0') * ii;
                 i--;
             }
-            *pointer = II(temp_value);
-            return;
+            return II(temp_value);
         }
     }
 }
@@ -78,6 +78,7 @@ void load_game() {
             assign_value('y', &P.y, load);
             assign_value('f', &P.facing, load);
             assign_value('d', &P.draw, load);
+            assign_value('W', &P.powerup, load);
             break;
         case 'E':
             assign_value('x', &E[enemy_count].x, load);
@@ -100,32 +101,35 @@ void load_game() {
             assign_value('h', &F.hidden, load);
             break;
         case '3':
-            assign_value('X', bomb3x3.get_x(), load);
-            assign_value('Y', bomb3x3.get_y(), load);
-            assign_value('E', bomb3x3.get_exist(), load);
-            assign_value('A', bomb3x3.get_active(), load);
-            assign_value('S', bomb3x3.get_size(), load);
-            assign_value('D', bomb3x3.get_diagonal(), load);
-            assign_value('W', bomb3x3.get_draw(), load);
-            assign_value('Q', bomb3x3.get_quantity(), load);
+            bomb3x3.set_coord(assign_value_class('X', bomb3x3.get_x(), load), assign_value_class('Y', bomb3x3.get_y(), load));
+            bomb3x3.set_exist(assign_value_class('E', bomb3x3.get_exist(), load));
+            bomb3x3.set_active(assign_value_class('A', bomb3x3.get_active(), load));
+            bomb3x3.set_size(assign_value_class('S', bomb3x3.get_size(), load));
+            bomb3x3.set_diagonal(assign_value_class('D', bomb3x3.get_diagonal(), load));
+            bomb3x3.set_draw(assign_value_class('W', bomb3x3.get_draw(), load));
+            bomb3x3.set_quantity(assign_value_class('Q', bomb3x3.get_quantity(), load));
+            break;
         case 'R':
-            assign_value('X', bombRand.get_x(), load);
-            assign_value('Y', bombRand.get_y(), load);
-            assign_value('E', bombRand.get_exist(), load);
-            assign_value('A', bombRand.get_active(), load);
-            assign_value('S', bombRand.get_size(), load);
-            assign_value('D', bombRand.get_diagonal(), load);
-            assign_value('W', bombRand.get_draw(), load);
-            assign_value('Q', bombRand.get_quantity(), load);
+            bombRand.set_coord(assign_value_class('X', bombRand.get_x(), load), assign_value_class('Y', bombRand.get_y(), load));
+            bombRand.set_exist(assign_value_class('E', bombRand.get_exist(), load));
+            bombRand.set_active(assign_value_class('A', bombRand.get_active(), load));
+            bombRand.set_size(assign_value_class('S', bombRand.get_size(), load));
+            bombRand.set_diagonal(assign_value_class('D', bombRand.get_diagonal(), load));
+            bombRand.set_draw(assign_value_class('W', bombRand.get_draw(), load));
+            bombRand.set_quantity(assign_value_class('Q', bombRand.get_quantity(), load));
+            break;
         case 'T':
             assign_value('a', &timer_bomb, load);
             assign_value('b', &timer_flame, load);
             assign_value('c', &timer_enemy, load);
             assign_value('d', &timer_game, load);
             break;
-        case 'M':
+        case 'K':
+            assign_value('k', &kill_count, load);
+        /*case 'M':
             assign_value('m', &current_map, load);
             break;
+        */
         case 'W':
             assign_value('D', &walls_destroyed, load);
             int ii = 0;
@@ -161,4 +165,69 @@ void wall_break(int x, int y) {
         walls_destroyed_array[i] = temp_array[i];
     }
     delete temp_array;
+}
+
+void load_map(const char* map_file_name) {
+    ifstream map_file;
+    map_file.open(map_file_name);
+    string c;
+    int temp_value = 0;
+    int y = 0;
+
+    getline(map_file, c); //Pega o x e y do mapa.
+    for (int i = 0; i < c.size(); i++) {
+        if (c[i] == 'y') {
+            while (c[i] != ',') {
+                i++;
+            }
+            i--;
+
+            for (int ii = 1; c[i] >= char(48) && c[i] <= char(57); ii *= 10) {//É um número (0, 9).
+                temp_value += (int(c[i]) - '0') * ii;
+                i--;
+            }
+
+            map = new char* [temp_value];
+            map_size_y = temp_value;
+
+            temp_value = 0;
+
+            while (c[i] != 'x') {
+                i--;
+            }
+            while (c[i] != ',') {
+                i++;
+            }
+            i--;
+
+            for (int ii = 1; c[i] >= char(48) && c[i] <= char(57); ii *= 10) {//É um número (0, 9).
+                temp_value += (int(c[i]) - '0') * ii;
+                i--;
+            }
+
+            for (int i = 0; i < map_size_y; i++) {
+                map[i] = new char[temp_value];
+            }
+
+            map_size_x = temp_value;
+            break;
+        }
+    }
+    do {
+        getline(map_file, c);
+        for (int i = 0; i < c.size() + 1; i++) {
+            if (c[i] == '@') {
+                map[y][i] = char(219);
+            }
+            else if (c[i] == '#') {
+                map[y][i] = char(178);
+            }
+            else if (c[i] == ' ') {
+                map[y][i] = ' ';
+            }
+        }
+        y++;
+    } while (!map_file.eof());
+
+    map_file.close();
 }
