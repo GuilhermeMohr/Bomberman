@@ -229,9 +229,15 @@ void kill_enemy(int x, int y) { //Mata um inimigo
 int explode_bomb(int x, int y, int size, int diagonal, bool pass_wall) { //Explode a bomba, matando inimigos e o jogador
     bool w = true, s = true, a = true, d = true;
     for (int i=0; i < size+1; i++){
-        if (!(x-i < 0) && w){
+        if (!(x-i < 1) && w){
             if (map[y][x-i] != char(219)) {
                 kill_enemy(x-i, y);
+
+                if (map[y][x-i] == char(111)){
+                    bomb3x3.set_exist(false);
+                } else if (map[y][x-i] == char(4)){
+                    bombRand.set_exist(false);
+                }
 
                 if (map[y][x-i] == char(2)) {
                     P.alive = false;
@@ -250,6 +256,12 @@ int explode_bomb(int x, int y, int size, int diagonal, bool pass_wall) { //Explo
             if (map[y][x+i] != char(219)) {
                 kill_enemy(x+i, y);
 
+                if (map[y][x+i] == char(111)){
+                    bomb3x3.set_exist(false);
+                } else if (map[y][x+i] == char(4)){
+                    bombRand.set_exist(false);
+                }
+
                 if (map[y][x+i] == char(2)) {
                     P.alive = false;
                 }
@@ -263,9 +275,15 @@ int explode_bomb(int x, int y, int size, int diagonal, bool pass_wall) { //Explo
             }
         }
 
-        if (!(y-i < 0) && a){
+        if (!(y-i < 1) && a){
             if (map[y-i][x] != char(219)) {
                 kill_enemy(x, y-i);
+
+                if (map[y-i][x] == char(111)){
+                    bomb3x3.set_exist(false);
+                } else if (map[y-i][x] == char(4)){
+                    bombRand.set_exist(false);
+                }
 
                 if (map[y-i][x] == char(2)) {
                     P.alive = false;
@@ -283,6 +301,12 @@ int explode_bomb(int x, int y, int size, int diagonal, bool pass_wall) { //Explo
         if (!(y+i > map_size_y) && d){
             if (map[y+i][x] != char(219)) {
                 kill_enemy(x, y+1);
+
+                if (map[y-i][x] == char(111)){
+                    bomb3x3.set_exist(false);
+                } else if (map[y-i][x] == char(4)){
+                    bombRand.set_exist(false);
+                }
 
                 if (map[y+i][x] == char(2)) {
                     P.alive = false;
@@ -312,17 +336,25 @@ bool extingue_fire(int size){
                 F.exist = false;
         }
         for (int i=0; i < size+1; i++){
-            if (map[F.y-i][F.x] == F.draw) {
-                map[F.y-i][F.x] = ' ';
+            if (!(F.y-i < 1)){
+                if (map[F.y-i][F.x] == F.draw) {
+                    map[F.y-i][F.x] = ' ';
+                }
             }
-            if (map[F.y+i][F.x] == F.draw) {
-                map[F.y+i][F.x] = ' ';
+            if (!(F.y+i > map_size_y)){
+                if (map[F.y+i][F.x] == F.draw) {
+                    map[F.y+i][F.x] = ' ';
+                }
             }
-            if (map[F.y][F.x-i] == F.draw) {
-                map[F.y][F.x-i] = ' ';
+            if (!(F.x-i < 1)){
+                if (map[F.y][F.x-i] == F.draw) {
+                    map[F.y][F.x-i] = ' ';
+                }
             }
-            if (map[F.y][F.x+i] == F.draw) {
-                map[F.y][F.x+i] = ' ';
+            if (!(F.x+i > map_size_x)){
+                if (map[F.y][F.x+i] == F.draw) {
+                    map[F.y][F.x+i] = ' ';
+                }
             }
         }
         return true;
