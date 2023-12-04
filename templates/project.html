@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='Icon.ico')}}">
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/styles.css')}}">
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0"/> 
+
+    <title>Gui Mohr Projetos</title>
+</head>
+
+<body>
+    {% for name in np.unique(items['Grupo']) %}
+        <h1>{{ name }}</h1>
+        <div class="grid" style="grid-template-columns: {{'33% 33% 33%' if 100 / items[items['Grupo'] == name].size >= 25 else '25% 25% 25% 25%'}};">
+            {% for item in np.nditer(items) %}
+                {% if item['Grupo'] == name %}
+                    <div class="grid_block">
+                        <header>{{ item['Nome'] }}</header>
+                        <div style="text-align: center;">
+                            <a href="{{ item['Link'] }}">
+                                {% if cv.imread(url_for('static', filename=item['Imagem'])[1:]).shape[1] > 550 %}
+                                    {% if cv.imread(url_for('static', filename=item['Imagem'])[1:]).shape[0] > 275 %}
+                                        <img style="width:350px; height:275px;" alt="Imagem do projeto" title="Ir para página no github." src="{{ url_for('static', filename=item['Imagem']) }}"/>
+                                    {% else %}
+                                        <img style="width:350px; height:'{{cv.imread(url_for('static', filename=item['Imagem'])[1:]).shape[0]}}';" alt="Imagem do projeto" title="Ir para página no github." src="{{ url_for('static', filename=item['Imagem']) }}"/>
+                                    {% endif %}
+                                {% else %}
+                                    {% if cv.imread(url_for('static', filename=item['Imagem'])[1:]).shape[0] > 275 %}
+                                        <img style="width:'{{cv.imread(url_for('static', filename=item['Imagem'])[1:]).shape[1]}}'; height:275px;" alt="Imagem do projeto" title="Ir para página no github." src="{{ url_for('static', filename=item['Imagem']) }}"/>
+                                    {% else %}
+                                        <img style="width:'{{cv.imread(url_for('static', filename=item['Imagem'])[1:]).shape[1]}}'; height:'{{cv.imread(url_for('static', filename=item['Imagem'])[1:]).shape[0]}}'" alt="Imagem do projeto" title="Ir para página no github." src="{{ url_for('static', filename=item['Imagem']) }}"/>
+                                    {% endif %}
+                                {% endif %}
+                            </a>
+                        </div>
+                        <footer>{{ item['Tipo'] }} desenvolvido em {{ item['Linguagem'] }}</footer>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+</body>
+
+</html>

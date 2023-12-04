@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='Icon.ico')}}">
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0"/> 
+    <title>Gui Mohr Projetos</title>
+</head>
+
+<body>
+    <h1>Hello, World!</h1>
+    <img scr="/static/coxinha.png"/>
+
+    <table>
+        <thead>
+            <tr>
+                {% for items_type in items.dtype.names %}
+                    <th>{{ items_type }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in np.nditer(items) %}
+                <tr>
+                    {% for items_type in items.dtype.names %}
+                        {% if items_type == 'Imagem' %}
+                            <img scr="{{ url_for('static', filename=item[items_type]) }}"/>
+                        {% else %}
+                            <td>{{ item[items_type] }}</td>
+                        {% endif %}
+                    {% endfor %}
+            </tr>
+            {% endfor %}
+    </table>
+</body>
+
+</html>

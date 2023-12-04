@@ -1,0 +1,45 @@
+body {
+    background-color:whitesmoke;
+}
+
+h1 {
+    font-family:verdana;
+    text-align:center;
+    background-color:darkgray;
+    border:3px solid gray;
+    padding: 10px;
+}
+
+h2 {
+    font-family:verdana;
+}
+
+img {
+    margin-top: 5px;
+}
+
+header {
+    font-family:verdana;
+    text-align:center;
+    background-color:darkgray;
+    border:3px solid gray;
+    padding: 10px;
+    font-size: 40px;
+}
+
+footer {
+    font-family:verdana;
+    font-size: 25px;
+    margin-left: 7px;
+    margin-bottom: 5px;
+}
+
+.grid_block{
+    margin: 5px;
+    background-color: LightGray;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 25% 25% 25% 25%;
+}
